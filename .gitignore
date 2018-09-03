@@ -1,0 +1,9 @@
+*.log
+.settings/
+CMSIS/
+Debug/
+StdPeriph_Driver/
+.cproject
+.project
+bavr_my_not_frtos Run.cfg
+LinkerScript.ld
