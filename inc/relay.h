@@ -61,7 +61,15 @@
 
 #define BUT1 					GPIO_Pin_9		///<Кнопка переключения приоритетов
 #define BUT1_PORT				GPIOE			///<Порт управления кнопкой приоритета
+
+//объявление функций
+
 void RELAY_Init( void );
+void InitKey(void);
+void channel_A_ON(void);
+void channel_B_ON(void);
+void channel_A_OFF(void);
+void channel_B_OFF(void);
 
 
 
