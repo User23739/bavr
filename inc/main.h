@@ -21,6 +21,10 @@
 #include "stm32f2xx_it.h"
 #include "stm32f2xx_gpio.h"
 #include "stm32f2xx_rcc.h"
+#include "stm32f2xx_adc.h"
+#include "stm32f2xx_dma.h"
+#include "stm32f2xx_usart.h"
+#include "stm32f2xx_tim.h"
 
 /*----Логика----------*/
 #include "system.h"
@@ -31,6 +35,7 @@
 #include "timers.h"
 #include "relay.h"
 #include "process.h"
+#include "gpio.h"
 
 
 

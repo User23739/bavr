@@ -1,8 +1,5 @@
-#include "adc_dma_mesur.h"
-#include "stm32f2xx_adc.h"
-#include "stm32f2xx_dma.h"
-#include "stm32f2xx_rcc.h"
-#include "tim_mesure.h"
+#include "main.h"
+
 
 //volatile uint16_t ADCBuffer[7] = {0};
  uint32_t ADCBuffer[7] = {0};

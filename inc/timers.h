@@ -8,7 +8,7 @@
 #ifndef TIMERS_H_
 #define TIMERS_H_
 
-#define MAX_GTIMERS 2  // макс число таймеров
+#define MAX_GTIMERS 5  // макс число таймеров
 
 #define GTIMER1 0		//таймер отключения канала А
 #define GTIMER2 1		//таймер отключения канала В

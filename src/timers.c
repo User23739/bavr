@@ -4,7 +4,7 @@
  *  Created on: 27 рту. 2018 у.
  *      Author: a.boyarkin
  */
-#include "timers.h"
+#include "main.h"
 
 unsigned int GTimers[MAX_GTIMERS];
 

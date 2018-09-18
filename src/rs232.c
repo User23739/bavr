@@ -1,7 +1,5 @@
-#include "rs232.h"
-#include "stm32f2xx_gpio.h"
-#include "stm32f2xx_usart.h"
-#include "stm32f2xx_rcc.h"
+#include "main.h"
+
 
 
 

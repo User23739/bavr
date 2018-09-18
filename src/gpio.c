@@ -5,9 +5,8 @@
  *      Author: a.boyarkin
  */
 
-#include "gpio.h"
-#include "stm32f2xx_gpio.h"
-#include "stm32f2xx_rcc.h"
+#include "main.h"
+
 
 //--глобальная переменная
 short flag_priori_chann_manual = 0;			// 0 - канал А; 1 - канал В.

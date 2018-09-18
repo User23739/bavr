@@ -93,37 +93,7 @@ void TIM4_IRQHandler(void){
 
 
 
-/*void TIM3_IRQHandler(void)
-{
-	if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)
-	    {
 
-			SWICH_FLAG = 1;
-
-	        TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-
-	    }
-
-}*/
-
-
-
-
-
-
-//-------------------Функция сравнения синусоиды полученной с опорной---------------------------------------------------
-//Переменные для функции сравнения
-/*volatile uint32_t vol[0] = 0;
-volatile uint32_t vol_tmp_chnA2 = 0;
-volatile uint32_t vol_tmp_chnA3 = 0;
-
-volatile uint32_t vol_tmp_chnB1 = 0;
-volatile uint32_t vol_tmp_chnB2 = 0;
-volatile uint32_t vol_tmp_chnB3 = 0;
-
-volatile uint32_t vol_tmp_chnC1 = 0;*/
-
-//счетчики измерений
 
 
 //данные идеальных синусоид с периодом измерения 1 мс
