@@ -7,8 +7,30 @@
 #include "main.h"
 
 
-extern uint32_t ADCBuffer[]; 		//переменная значений из АЦП
+extern uint32_t ADCBuffer[]; //переменная значений из АЦП
+extern short int flag_channel_A[];
+extern short int flag_channel_B[];
 extern short flag_priori_chann_manual;	//переменная приоритека танала
+extern short flag_status_chann_A;
+extern short flag_status_chann_B;
+extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
+extern short flag_switch_B;
+extern short flag_aktiv_channel;
+
+
+
+//переменные для хранения текущих значений измерения
+
+volatile uint32_t aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
+										// с АЦП
+										// [0]-КАНАЛ А ФАЗА 1
+										// [1]-КАНАЛ А ФАЗА 2
+										// [2]-КАНАЛ А ФАЗА 3
+										// [3]-КАНАЛ В ФАЗА 1
+										// [4]-КАНАЛ В ФАЗА 2
+										// [5]-КАНАЛ В ФАЗА 3
+										// [6]-КАНАЛ С ФАЗА 1
+
 
 
 // переменные  буфера
@@ -58,6 +80,8 @@ void send_buffer(uint32_t *vol_tmp_chan){
 int count_mes = 0;
 
 
+
+
 void Aver(void){
 
 	if (count_mes != 3 ){
@@ -84,7 +108,7 @@ void Aver(void){
 }
 
 
-/----------функция переключения------------------------------------------------------------------------
+//----------функция переключения------------------------------------------------------------------------
 //судить о качестве измерительного канала будем судить по 3 последовательным отказам по любой фазе
 int count_err_A[4] = {0};			//[0]- общий на канал; [1]- AA; [2]-AB; [3]-AC;
 int count_err_B[4] = {0};			//[0]- общий на канал; [1]- BA; [2]-BB; [3]-BC;

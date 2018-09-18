@@ -13,7 +13,7 @@
 /*-----Сигнатуры функций--------------------------------------------------*/
 
 void USARTSend(const unsigned char *pucBuffer);
-void Aver(void);
+
 void sin_compar_A(uint32_t *vol);
 void sin_compar_B(uint32_t *vol);
 
@@ -73,27 +73,6 @@ uint32_t shift20 = 264;
 
 //-------------------------
 
-//переменные для хранения текущих значений измерения
-
-//Обработчик таймера
-//volatile uint32_t vol_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
-										// с АЦП
-										// [0]-КАНАЛ А ФАЗА 1
-										// [1]-КАНАЛ А ФАЗА 2
-										// [2]-КАНАЛ А ФАЗА 3
-										// [3]-КАНАЛ В ФАЗА 1
-										// [4]-КАНАЛ В ФАЗА 2
-										// [5]-КАНАЛ В ФАЗА 3
-										// [6]-КАНАЛ С ФАЗА 1
-volatile uint32_t aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
-										// с АЦП
-										// [0]-КАНАЛ А ФАЗА 1
-										// [1]-КАНАЛ А ФАЗА 2
-										// [2]-КАНАЛ А ФАЗА 3
-										// [3]-КАНАЛ В ФАЗА 1
-										// [4]-КАНАЛ В ФАЗА 2
-										// [5]-КАНАЛ В ФАЗА 3
-										// [6]-КАНАЛ С ФАЗА 1
 
 
 
@@ -515,30 +494,6 @@ int main(void){
 
 
 
-		//USARTSend(buffer);
-		uint8_t i = 0;
-
-				//uint32_t ADC_chan1[200] = {0};
-				TIM_Cmd(TIM4, ENABLE);
-
-				if (buff_chanA1[200] != 0){
-					TIM_Cmd(TIM4, DISABLE);
-					//sprintf(buffer, "%d\r\n", start);
-					//USARTSend(buffer);
-
-					for (i=0; i<201; i++){
-
-							sprintf(buffer, "%d\r\n", buff_chanA1[i]);
-							USARTSend(buffer);
-
-						}
-
-					for (i=0; i<201; i++) buff_chanA1[i] = 0;
-
-
-
-
-				}
 
 	}
 

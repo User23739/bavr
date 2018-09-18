@@ -11,6 +11,6 @@
 void send_buffer(uint32_t *vol_tmp_chan);
 void channel_status(void);
 void switch_channel(void);
-
+void Aver(void);
 
 #endif /* PROCESS_H_ */

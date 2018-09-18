@@ -4,6 +4,9 @@
 
 //инизиализация
 
+extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
+extern short flag_switch_B;
+extern short flag_aktiv_channel;
 
 
 
