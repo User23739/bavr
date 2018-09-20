@@ -93,6 +93,7 @@ volatile uint32_t befor = 0;
 volatile uint32_t after = 0;								// предидущие значения
 
 int k = 0;                                  // счетчик измерений от ноля
+int a1l=0;									// переменная для хранения пред идущего указателя буфера
 
 short flag_mov_sin_A = 0;						    // 0 -идем вверх, 1 -идем вниз
 short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
@@ -120,18 +121,19 @@ void sin_compar_A(uint32_t *vol){
 
 /*Опроделение направления движения синусоиды */
 
-	if (buff_chanA1[a1-1] > SIN_A_ref_up[0]){
-			flag_mov_sin_A = 1;
-	}
-	else{
-			flag_mov_sin_A = 0;
+	if ((k == 0) && (flag_sinkh_chan_A == 1)){
+		a1l = a1-1;
+		if (buff_chanA1[a1l] > SIN_A_ref_up[0]){
+				flag_mov_sin_A = 1;
+		}
+		else{
+				flag_mov_sin_A = 0;
+		}
 	}
 
-/*Сравнение синусоиды */
-	if (flag_mov_sin_A == 0){
-
+/*Сравнение синусоиды положительная полуволна*/
+	if ((flag_mov_sin_A == 0) && (flag_sinkh_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
-
 		if((SIN_A_ref_up[k]-shift10) < vol[0] && (SIN_A_ref_up[k]+shift10) > vol[0]){
 			flag_channel_A[0] = 0;
 			k++;
@@ -156,11 +158,13 @@ void sin_compar_A(uint32_t *vol){
 			flag_channel_A[3] = 1;
 		}
 	}
-	else{
+/*Сравнение синусоиды отрицательная полуволна*/
+	if ((flag_mov_sin_A == 1) && (flag_sinkh_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
 		if((SIN_A_ref_dw[k]-shift10) < vol[0] && (SIN_A_ref_dw[k]+shift10) > vol[0]){
 			flag_channel_A[0] = 0;
 			k++;
+			if (k == 10) flag_sinkh_chan_A = 0;
 		}
 		else{
 			flag_channel_A[0] = 1;
