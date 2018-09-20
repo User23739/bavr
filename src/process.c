@@ -16,11 +16,7 @@ extern short flag_status_chann_B;
 extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
 extern short flag_switch_B;
 extern short flag_aktiv_channel;
-
-
-
 //переменные для хранения текущих значений измерения
-
 volatile uint32_t aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
 										// [0]-КАНАЛ А ФАЗА 1
@@ -30,9 +26,6 @@ volatile uint32_t aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренн
 										// [4]-КАНАЛ В ФАЗА 2
 										// [5]-КАНАЛ В ФАЗА 3
 										// [6]-КАНАЛ С ФАЗА 1
-
-
-
 // переменные  буфера
 // буфер кольцево для хранения данных измерения
 uint32_t buff_chanA1[201] = {0};
@@ -95,7 +88,6 @@ void Aver(void){
 			}
 		//тут вызываем функцию пересылки данных в буфер
 		send_buffer(aver_tmp_chan);
-
 		sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
 		sin_compar_B(aver_tmp_chan);	//Вызываем функцию сравнения канала B
 		count_mes = 0;
@@ -153,7 +145,6 @@ void switch_channel(void){
 				case 0:
 					//выставляем флаг на включение канала А
 					flag_switch_A = 0;
-
 					break;
 				case 1:
 					//ничего не делаем
@@ -161,7 +152,6 @@ void switch_channel(void){
 				case 2:
 					//выставляем флаг на включение канала А
 					flag_switch_A = 0;
-
 					break;
 			}
 		}
@@ -170,12 +160,10 @@ void switch_channel(void){
 				case 0:
 					//выставляем флаг на включение канала B
 					flag_switch_B = 0;
-
 					break;
 				case 1:
 					//выставляем флаг на включение канала B
 					flag_switch_B = 0;
-
 					break;
 				case 2:
 					//ничего не деалем
@@ -191,17 +179,12 @@ void switch_channel(void){
 		if (flag_status_chann_A == 1){
 			flag_switch_A = 1;		//флаг на отключение канала
 			flag_switch_B = 0;		//флаг на включение канала
-
-
 		}
 		if (flag_status_chann_B == 1){
 			flag_switch_B = 1;		//флаг на отключение канала
 			flag_switch_A = 0;		//флаг на включение канала
-
 		}
-
 	}
-
 }
 
 
