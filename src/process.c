@@ -77,10 +77,8 @@ void send_buffer(uint32_t *vol_tmp_chan){
 }
 
 //функция усреднения и фильтация фходных значений
+
 int count_mes = 0;
-
-
-
 
 void Aver(void){
 
@@ -97,10 +95,10 @@ void Aver(void){
 			}
 		//тут вызываем функцию пересылки данных в буфер
 		send_buffer(aver_tmp_chan);
-		count_mes = 0;
+
 		sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
 		sin_compar_B(aver_tmp_chan);	//Вызываем функцию сравнения канала B
-
+		count_mes = 0;
 		for (int i=0; i<7; i++) aver_tmp_chan[i] = 0;
 	}
 
@@ -109,13 +107,14 @@ void Aver(void){
 
 
 //----------функция переключения------------------------------------------------------------------------
-//судить о качестве измерительного канала будем судить по 3 последовательным отказам по любой фазе
+//судить о качестве измерительного канала будем по 3 последовательным отказам по любой фазе на калане
 int count_err_A[4] = {0};			//[0]- общий на канал; [1]- AA; [2]-AB; [3]-AC;
 int count_err_B[4] = {0};			//[0]- общий на канал; [1]- BA; [2]-BB; [3]-BC;
+int count_work = 0;
 
 void channel_status(void){
 
-	count_err_A[0]++;
+	count_work++;
 	if ((flag_channel_A[0]==0)&&(flag_channel_A[1]==0)&&(flag_channel_A[2]==0)){
 		flag_status_chann_A = 0;
 	}
@@ -123,11 +122,10 @@ void channel_status(void){
 		if (flag_channel_A[0]==1) count_err_A[1] += 1;
 		if (flag_channel_A[1]==1) count_err_A[2] += 1;
 		if (flag_channel_A[2]==1) count_err_A[3] += 1;
-		if ((count_err_A[0] == 3)&&((count_err_A[1] == 3)||(count_err_A[2] == 3)||(count_err_A[3] == 3))) flag_status_chann_A = 1 ;
-		if (count_err_A[0] == 3) for (int i=0; i<4; i++)count_err_A[i] = 0;
+		if ((count_work == 3)&&((count_err_A[1] == 3)||(count_err_A[2] == 3)||(count_err_A[3] == 3))) flag_status_chann_A = 1 ;
+
 	}
 
-	count_err_B[0]++;
 	if ((flag_channel_B[0]==0)&&(flag_channel_B[1]==0)&&(flag_channel_B[2]==0)){
 		flag_status_chann_B = 0;
 	}
@@ -135,10 +133,14 @@ void channel_status(void){
 		if (flag_channel_B[0]==1) count_err_B[1] += 1;
 		if (flag_channel_B[1]==1) count_err_B[2] += 1;
 		if (flag_channel_B[2]==1) count_err_B[3] += 1;
-		if ((count_err_B[0] == 3)&&((count_err_B[1] == 3)||(count_err_B[2] == 3)||(count_err_B[3] == 3))) flag_status_chann_B = 1 ;
-		if (count_err_B[0] == 3) for (int i=0; i<4; i++)count_err_B[i] = 0;
-	}
+		if ((count_work == 3)&&((count_err_B[1] == 3)||(count_err_B[2] == 3)||(count_err_B[3] == 3))) flag_status_chann_B = 1 ;
 
+	}
+	if (count_work == 3) {
+		for (int i=0; i<4; i++)count_err_A[i] = 0;
+		for (int i=0; i<4; i++)count_err_B[i] = 0;
+		count_work = 0;
+	}
 
 }
 

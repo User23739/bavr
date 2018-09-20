@@ -29,13 +29,13 @@ void TIMER_Init_4(void)
 
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 
-		//****************TIM4 for Modbus 1 tick = 1uS
+		//****************TIM4 for 1 tick = 1uS
 
   		//5000 мкс
 	    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
 	    TIM_TimeBaseStructure.TIM_Prescaler= 49;
 	    TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up;
-	    TIM_TimeBaseStructure.TIM_Period = 300;//до этого значени€ будет считать таймер
+	    TIM_TimeBaseStructure.TIM_Period = 100;//до этого значени€ будет считать таймер 100 uS/ 100 мк—
 	    TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
 
 	    TIM_ClearFlag(TIM4, TIM_FLAG_Update);
