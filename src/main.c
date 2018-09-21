@@ -20,12 +20,8 @@ void sin_compar_B(uint32_t *vol);
 
 
 //-------переменныеи и функции для тестов------------------------------------
-volatile char buffer[10] = {'\0'};  // буфер для передачи данных, примитивный
-char BufTest[500] = {'\0'};			//буфер состояния флагов
+volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
 
-void SendBuff(void){
-
-}
 
 
 void USARTSend(const unsigned char *pucBuffer){
@@ -88,9 +84,13 @@ void TIM4_IRQHandler(void){
     }
 }
 
-//данные идеальных синусоид с периодом измерения 1 мс
-volatile uint32_t befor = 0;
-volatile uint32_t after = 0;								// предидущие значения
+
+/*Функция синхронизации */
+void synch (){
+
+
+}
+
 
 int k = 0;                                  // счетчик измерений от ноля
 int a1l=0;									// переменная для хранения пред идущего указателя буфера
@@ -105,8 +105,13 @@ short flag_sinkh_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
 /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
 
+void synch (){
+
+
+}
+
 void sin_compar_A(uint32_t *vol){
-	if (k == 10) k=0;
+	if (k == 10) k = 0;
 
 /*Поиск 0 и синхронизация */
 	if (flag_sinkh_chan_A == 0)	{
@@ -299,21 +304,27 @@ int main(void){
 // инициализация переферии
 
 	SYSTEM_Init();
-	RELAY_Init();
+	//RELAY_Init();
 	ADC_DMA_Init();
 	TIMER_Init();
 	RS232_Init();
-	InitGPIO();
+	//InitGPIO();
 	InitGTimers();  // инициализируем глобальные таймеры
-	InitKey();		//инициализация каналов переключения (отключение)
+	//InitKey();		//инициализация каналов переключения (отключение)
 
 	while(1){
-		channel_status();
-		switch_channel();
-		channel_A_ON();
-		channel_B_ON();
-		channel_A_OFF();
-		channel_B_OFF();
-		ButControl();
+
+				ADC_SoftwareStartConv(ADC1);
+	            adc_value = ADC_GetConversionValue(ADC1);
+	            sprintf(buffer, "%d\r\n", adc_value);
+	            USARTSend(buffer, sizeof(buffer));
+
+		//channel_status();
+		//switch_channel();
+		//channel_A_ON();
+		//channel_B_ON();
+		//channel_A_OFF();
+		//channel_B_OFF();
+		//ButControl();
 	}
 }
