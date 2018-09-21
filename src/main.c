@@ -106,7 +106,7 @@ short flag_sinkh_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
 /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
 
 void sin_compar_A(uint32_t *vol){
-
+	if (k == 10) k=0;
 
 /*Поиск 0 и синхронизация */
 	if (flag_sinkh_chan_A == 0)	{
@@ -120,9 +120,9 @@ void sin_compar_A(uint32_t *vol){
 	}
 
 /*Опроделение направления движения синусоиды */
-
+	a1l = a1-1;
 	if ((k == 0) && (flag_sinkh_chan_A == 1)){
-		a1l = a1-1;
+
 		if (buff_chanA1[a1l] > SIN_A_ref_up[0]){
 				flag_mov_sin_A = 1;
 		}
@@ -142,6 +142,7 @@ void sin_compar_A(uint32_t *vol){
 		else{
 			flag_channel_A[0] = 1;
 			k++;
+			if (k == 10) flag_sinkh_chan_A = 0;
 		}
 		//---------------------------------------------AB------------------------------------------------------
 		if((SIN_B_ref_up[k]-shift10) < vol[1] && (SIN_B_ref_up[k]+shift10) > vol[1]){
@@ -169,6 +170,7 @@ void sin_compar_A(uint32_t *vol){
 		else{
 			flag_channel_A[0] = 1;
 			k++;
+			if (k == 10) flag_sinkh_chan_A = 0;
 		}
 		//-----------------------------------------------AB----------------------------------------------------
 		if((SIN_B_ref_dw[k]-shift10) < vol[1] && (SIN_B_ref_dw[k]+shift10) > vol[1]){
