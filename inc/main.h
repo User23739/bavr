@@ -43,4 +43,20 @@
 
 #define KEY_DELAY 45
 
+#define REF_MAX 2100
+#define REF_MIN 1800
+
+#define COUN_SINCH_ERR 20
+
+
+
+//Сигнатуры функций
+void USARTSend(const unsigned char *pucBuffer);
+void sin_compar_A(uint32_t *vol);
+void sin_compar_B(uint32_t *vol);
+
+void InitSynchA(void);
+void SynchA (uint32_t *vol);
+
+
 #endif /* MAIN_H_ */

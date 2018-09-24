@@ -88,8 +88,9 @@ void Aver(void){
 			aver_tmp_chan[i] = aver_tmp_chan[i]/3;
 			}
 		//тут вызываем функцию пересылки данных в буфер
-		send_buffer(aver_tmp_chan);
-		sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
+		SynchA(*aver_tmp_chan);
+		send_buffer(*aver_tmp_chan);
+		sin_compar_A(*aver_tmp_chan);	//Вызываем функцию сравнения канала А
 		//sin_compar_B(aver_tmp_chan);	//Вызываем функцию сравнения канала B
 		flag_end_aver = 0;
 		count_mes = 0;

@@ -12,10 +12,7 @@
 /*-----------Данные-------------------------------------------------------*/
 /*-----Сигнатуры функций--------------------------------------------------*/
 
-void USARTSend(const unsigned char *pucBuffer);
 
-void sin_compar_A(uint32_t *vol);
-void sin_compar_B(uint32_t *vol);
 
 
 
@@ -52,7 +49,7 @@ short flag_switch_B = 0;		    		// 0 - вкл; 1 - откл
 /*uint32_t SIN_A_ref_up[] = {1983,	2390, 2758,	3049, 3236,	3300, 3236,	3049, 2758,
 					  2390,	1983, 1577,	1209, 918, 731,	666, 731, 918, 1209, 1577 };            //Полный период Резерв на всякий случай     */
 
-uint32_t SIN_A_ref_up[] = {1983, 2390, 2758,	3049, 3236,	3300, 3236,	3049, 2758, 2390 };			// идеал положительной полуволны синусоиды
+uint32_t SIN_A_ref_up[] = {1983, 2390, 2758, 3049, 3236, 3300, 3236, 3049, 2758, 2390 };			// идеал положительной полуволны синусоиды
 uint32_t SIN_A_ref_dw[] = {1983, 1577, 1209, 918, 731, 666, 731, 918, 1209, 1577 };			// идеал отрицательной полуволны синусоиды
 
 uint32_t SIN_C_ref_up[] = {3124, 2865, 2520, 2122, 1710, 1325, 1005, 781, 674, 695 };			// идеал положительной полуволны синусоиды A
@@ -84,10 +81,70 @@ void TIM4_IRQHandler(void){
     }
 }
 
+/*
+ Поиск 0 и синхронизация */
+/*	if (flag_sinch_chan_A == 0)	{
+		if((SIN_A_ref_up[0]-shift10) < vol[0] && (SIN_A_ref_up[0]+shift10) > vol[0]) {
+			flag_sinch_chan_A =1;
+			k = 0;
+		}
+		else{
+			flag_sinch_chan_A = 0;
+		}
+	}
+*/
+
 
 /*Функция синхронизации */
-void synch (){
+//Инициализация функции синхронизации
+short count_work_err = 0;  //счетчик ошибок синхронизации
+short err_flag_sinch = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
 
+void InitSynchA(){
+	count_work_err = 0;
+	err_flag_sinch = 0;
+
+}
+//Процесс функции инициализации
+void SynchA (uint32_t *vol){
+
+	if (flag_sinch_chan_A == 0){
+		if ((REF_MIN < vol[0]) && (vol[0] > REF_MAX)){
+			flag_sinch_chan_A = 1;
+			 err_flag_sinch = 0;
+			StartGTimer(GTIMER4);
+		}
+		else{
+			count_work_err++;
+			if(count_work_err < COUN_SINCH_ERR) err_flag_sinch = 1;
+		}
+	}
+
+
+}
+/*Функция определения квадранта синуса*/
+void SinQuadrant(){
+
+		a1l = a1-1;
+		if ((k == 0) && (flag_sinch_chan_A == 1)){
+
+			if (buff_chanA1[a1l] > SIN_A_ref_up[0]){
+					flag_mov_sin_A = 1;
+			}
+			else{
+					flag_mov_sin_A = 0;
+			}
+		}
+}
+
+/*Функция расчета частоты*/
+void Freq(){
+
+}
+
+
+/*Функция расчета среднеквадратичного значения*/
+void TrueRMS(){
 
 }
 
@@ -99,55 +156,31 @@ short flag_mov_sin_A = 0;						    // 0 -идем вверх, 1 -идем вниз
 short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
 												//[1] - флаг состояния AB
 												//[2] - флаг состояния AC
-short flag_sinkh_chan_A = 0;					// 0-нет синхронизации; 1-есть синхронизация
-short flag_sinkh_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
+short flag_sinch_chan_A = 0;					// 0-нет синхронизации; 1-есть синхронизация
+short flag_sinch_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
 
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
 /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
 
-void synch (){
 
-
-}
 
 void sin_compar_A(uint32_t *vol){
 	if (k == 10) k = 0;
 
-/*Поиск 0 и синхронизация */
-	if (flag_sinkh_chan_A == 0)	{
-		if((SIN_A_ref_up[0]-shift10) < vol[0] && (SIN_A_ref_up[0]+shift10) > vol[0]) {
-			flag_sinkh_chan_A =1;
-			k = 0;
-		}
-		else{
-			flag_sinkh_chan_A = 0;
-		}
-	}
 
-/*Опроделение направления движения синусоиды */
-	a1l = a1-1;
-	if ((k == 0) && (flag_sinkh_chan_A == 1)){
-
-		if (buff_chanA1[a1l] > SIN_A_ref_up[0]){
-				flag_mov_sin_A = 1;
-		}
-		else{
-				flag_mov_sin_A = 0;
-		}
-	}
 
 /*Сравнение синусоиды положительная полуволна*/
-	if ((flag_mov_sin_A == 0) && (flag_sinkh_chan_A == 1)){
+	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
 		if((SIN_A_ref_up[k]-shift10) < vol[0] && (SIN_A_ref_up[k]+shift10) > vol[0]){
 			flag_channel_A[0] = 0;
 			k++;
-			if (k == 10) flag_sinkh_chan_A = 0;
+			if (k == 10) flag_sinch_chan_A = 0;
 		}
 		else{
 			flag_channel_A[0] = 1;
 			k++;
-			if (k == 10) flag_sinkh_chan_A = 0;
+			if (k == 10) flag_sinch_chan_A = 0;
 		}
 		//---------------------------------------------AB------------------------------------------------------
 		if((SIN_B_ref_up[k]-shift10) < vol[1] && (SIN_B_ref_up[k]+shift10) > vol[1]){
@@ -161,21 +194,21 @@ void sin_compar_A(uint32_t *vol){
 			flag_channel_A[2] = 0;
 		}
 		else{
-			flag_channel_A[3] = 1;
+			flag_channel_A[2] = 1;
 		}
 	}
 /*Сравнение синусоиды отрицательная полуволна*/
-	if ((flag_mov_sin_A == 1) && (flag_sinkh_chan_A == 1)){
+	if ((flag_mov_sin_A == 1) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
 		if((SIN_A_ref_dw[k]-shift10) < vol[0] && (SIN_A_ref_dw[k]+shift10) > vol[0]){
 			flag_channel_A[0] = 0;
 			k++;
-			if (k == 10) flag_sinkh_chan_A = 0;
+			if (k == 10) flag_sinch_chan_A = 0;
 		}
 		else{
 			flag_channel_A[0] = 1;
 			k++;
-			if (k == 10) flag_sinkh_chan_A = 0;
+			if (k == 10) flag_sinch_chan_A = 0;
 		}
 		//-----------------------------------------------AB----------------------------------------------------
 		if((SIN_B_ref_dw[k]-shift10) < vol[1] && (SIN_B_ref_dw[k]+shift10) > vol[1]){
@@ -213,7 +246,7 @@ void sin_compar_B(uint32_t *vol){  /// передаем заначения всех 7 каналов. Синхро
 	//смотрим счетчик досчитал ли до 10 значений
 	if (kb < 10){
 		kb = 0;
-		flag_sinkh_chan_B =0;
+		flag_sinch_chan_B =0;
 	}
 
 	after_B = befor_B;
@@ -224,7 +257,7 @@ void sin_compar_B(uint32_t *vol){  /// передаем заначения всех 7 каналов. Синхро
 		if (kb == 0){				// находили ли до этого момента ноль
 
 			if((SIN_A_ref_up[kb]-shift10) < vol[3] && (SIN_A_ref_up[kb]+shift10) > vol[3]){   //Детектирование 0 и переход дальше
-				flag_sinkh_chan_B =1;
+				flag_sinch_chan_B =1;
 						// необходимо определить направление синусоиды.
 					if (after_B > SIN_A_ref_up[kb])	{
 							flag_mov_sin_B = 1;
@@ -236,7 +269,7 @@ void sin_compar_B(uint32_t *vol){  /// передаем заначения всех 7 каналов. Синхро
 						}
 				}
 			else{
-				flag_sinkh_chan_B =0;
+				flag_sinch_chan_B =0;
 			}
 		}
 		else{		// если уже был найден ноль
@@ -311,6 +344,7 @@ int main(void){
 	//InitGPIO();
 	InitGTimers();  // инициализируем глобальные таймеры
 	//InitKey();		//инициализация каналов переключения (отключение)
+	InitSynchA();
 
 	while(1){
 
