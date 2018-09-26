@@ -3,19 +3,6 @@
 
 #include "main.h"
 
-
-
-
-//Измерения производятся с переодом 1 мс.
-
-
-/*-----------Данные-------------------------------------------------------*/
-/*-----Сигнатуры функций--------------------------------------------------*/
-
-
-
-
-
 //-------переменныеи и функции для тестов------------------------------------
 volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
 
@@ -30,11 +17,6 @@ void USARTSend(const unsigned char *pucBuffer){
 		}
 	}
 }
-
-
-//--глобальные переменные
-
-
 
 short flag_aktiv_channel = 0;				// 1 - канал А; 0 - оба выключенны; 2 - канал В.
 short flag_status_chann_A = 0;				// состояние канала А;  0 - канал норм, 1 - канал не в норм.
@@ -52,11 +34,11 @@ short flag_mov_sin_A = 0;						    // 0 -идем вверх, 1 -идем вниз
 double SIN_A_ref[] = {13,5, 66, 116,5, 164,5, 208,5, 247, 279,5, 305,5, 323,5, 333,5, 335,5,
 						329,5, 315,5, 293,5, 264, 228,5, 187, 141, 91,5, 40};			// идеал положительной полуволны синусоиды
 
-double SIN_B_ref_up[] = {-297,5,	-318,5, -331,5, -336, -333, -321, -301,5, -274,5, -241,
+double SIN_B_ref[] = {-297,5,	-318,5, -331,5, -336, -333, -321, -301,5, -274,5, -241,
 						-201,5, -157, -108,5, -57, -4,5, 49, 100, 149, 194, 234,5, 269,5};			// сдвиг по синусоиде В
 
 
-double SIN_C_ref_up[] = {284,5, 253, 215, 172,5, 75, 22,5, -31, -83, -133, -179,5, -222, -258,5,
+double SIN_C_ref[] = {284,5, 253, 215, 172,5, 75, 22,5, -31, -83, -133, -179,5, -222, -258,5,
 							-289, -312, -328, -335,5,  -335, -326, -309};						// сдвиг по синусоиде С
 
 
@@ -134,18 +116,18 @@ void SinQuadrant(int *x, int *y, double *buffA, double *buffB){
 	if(flag_sinch_chan_A == 1){
 		tmpA--;
 		if(buffA[tmpA] > ZIRO){
-			flag_mov_sin_A == 0;
+			flag_mov_sin_A = 0;
 		}
 		else{
-			flag_mov_sin_A == 1;
+			flag_mov_sin_A = 1;
 		}
 	if(flag_sinch_chan_B == 1){
 		tmpB--;
 		if(buffB[tmpB] > ZIRO){
-			flag_mov_sin_B == 0;
+			flag_mov_sin_B = 0;
 		}
 		else{
-			flag_mov_sin_B == 1;
+			flag_mov_sin_B = 1;
 		}
 	}
 
@@ -166,7 +148,7 @@ void TrueRMS(){
 
 
 int k = 0;                                  // счетчик измерений от ноля
-int a1l=0;									// переменная для хранения пред идущего указателя буфера
+int k0 = 0;									// переменная для хранения пред идущего указателя буфера
 
 
 short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
@@ -179,32 +161,35 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 
 
 void sin_compar_A(double  *vol){
-	if (k == 10) k = 0;
-
+	if (k0 == k) k = 0;
+	if (k == 0){
+		k = sizeof(SIN_A_ref)/sizeof(double);
+		k0 = 0;
+	}
 
 
 /*Сравнение синусоиды положительная полуволна*/
 	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
-		if((SIN_A_ref_up[k]-shift10) < vol[0] && (SIN_A_ref_up[k]+shift10) > vol[0]){
+		if((SIN_A_ref[k0]-shift10) < vol[0] && (SIN_A_ref[k0]+shift10) > vol[0]){
 			flag_channel_A[0] = 0;
-			k++;
-			if (k == 10) flag_sinch_chan_A = 0;
+			k0++;
+			if (k0 == k) flag_sinch_chan_A = 0;
 		}
 		else{
 			flag_channel_A[0] = 1;
-			k++;
-			if (k == 10) flag_sinch_chan_A = 0;
+			k0++;
+			if (k0 == k) flag_sinch_chan_A = 0;
 		}
 		//---------------------------------------------AB------------------------------------------------------
-		if((SIN_B_ref_up[k]-shift10) < vol[1] && (SIN_B_ref_up[k]+shift10) > vol[1]){
+		if((SIN_B_ref[k0]-shift10) < vol[1] && (SIN_B_ref[k0]+shift10) > vol[1]){
 			flag_channel_A[1] = 0;
 		}
 		else{
 			flag_channel_A[1] = 1;
 		}
 		//---------------------------------------------AC------------------------------------------------------
-		if((SIN_C_ref_up[k]-shift10) < vol[2] && (SIN_C_ref_up[k]+shift10) > vol[2]) {
+		if((SIN_C_ref[k0]-shift10) < vol[2] && (SIN_C_ref[k0]+shift10) > vol[2]) {
 			flag_channel_A[2] = 0;
 		}
 		else{
@@ -214,7 +199,7 @@ void sin_compar_A(double  *vol){
 /*Сравнение синусоиды отрицательная полуволна*/
 	if ((flag_mov_sin_A == 1) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
-		if((SIN_A_ref_dw[k]-shift10) < vol[0] && (SIN_A_ref_dw[k]+shift10) > vol[0]){
+		if((SIN_A_ref[k]-shift10) < vol[0] && (SIN_A_ref[k]+shift10) > vol[0]){
 			flag_channel_A[0] = 0;
 			k++;
 			if (k == 10) flag_sinch_chan_A = 0;
