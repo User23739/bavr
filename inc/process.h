@@ -8,6 +8,9 @@
 #ifndef PROCESS_H_
 #define PROCESS_H_
 
+#define REF_ZIRO 2048
+#define U_QUANTUM 0.25513
+
 void send_buffer(uint32_t *vol_tmp_chan);
 void channel_status(void);
 void switch_channel(void);
