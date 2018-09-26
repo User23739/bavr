@@ -52,11 +52,11 @@
 
 //Сигнатуры функций
 void USARTSend(const unsigned char *pucBuffer);
-void sin_compar_A(uint32_t *vol);
-void sin_compar_B(uint32_t *vol);
+void sin_compar_A(double *vol);
+void sin_compar_B(double *vol);
 
 void InitSynchA(void);
-void SynchA (uint32_t *vol);
+void SynchA (double *vol);
 
 
 #endif /* MAIN_H_ */

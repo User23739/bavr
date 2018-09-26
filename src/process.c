@@ -17,7 +17,7 @@ extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
 extern short flag_switch_B;
 extern short flag_aktiv_channel;
 //переменные для хранения текущих значений измерения
-volatile uint32_t aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
+volatile double aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
 										// [0]-КАНАЛ А ФАЗА 1
 										// [1]-КАНАЛ А ФАЗА 2
@@ -26,7 +26,7 @@ volatile uint32_t aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренн
 										// [4]-КАНАЛ В ФАЗА 2
 										// [5]-КАНАЛ В ФАЗА 3
 										// [6]-КАНАЛ С ФАЗА 1
-volatile int real_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
+volatile double real_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
 										// [0]-КАНАЛ А ФАЗА 1
 										// [1]-КАНАЛ А ФАЗА 2
@@ -38,15 +38,15 @@ volatile int real_tmp_chan[7] = {0}; // переменная куда помещаются измеренные да
 
 // переменные  буфера
 // буфер кольцево для хранения данных измерения
-uint32_t buff_chanA1[201] = {0};
-uint32_t buff_chanA2[201] = {0};
-uint32_t buff_chanA3[201] = {0};
+double buff_chanA1[201] = {0};
+double buff_chanA2[201] = {0};
+double buff_chanA3[201] = {0};
 
-uint32_t buff_chanB1[201] = {0};
-uint32_t buff_chanB2[201] = {0};
-uint32_t buff_chanB3[201] = {0};
+double buff_chanB1[201] = {0};
+double buff_chanB2[201] = {0};
+double buff_chanB3[201] = {0};
 
-uint32_t buff_chanC1[201] = {0};
+double buff_chanC1[201] = {0};
 
 //указатель кольцевого буфера
 int a1, a2, a3 = 0;			//указатели буфера канала А
@@ -88,7 +88,7 @@ void Aver(void){
 	if (count_mes != 3 ){
 
 	    for (int i=0; i<7; i++){
-	    	real_tmp_chan[i] = (ADCBuffer[i] - REF_ZIRO)*U_QUANTUM;
+	    	real_tmp_chan[i] = double ADCBuffer[i] - double REF_ZIRO*U_QUANTUM;
 	    	aver_tmp_chan[i] += real_tmp_chan[i];
 			}
 	    count_mes++;

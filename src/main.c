@@ -114,7 +114,7 @@ void InitSynchA(){
 
 }
 //Процесс функции инициализации
-void SynchA (uint32_t *vol){
+void SynchA (double *vol){
 
 	if (flag_sinch_chan_A == 0){
 		if ((REF_MIN < vol[0]) && (vol[0] > REF_MAX)){
@@ -177,7 +177,7 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 
 
 
-void sin_compar_A(uint32_t *vol){
+void sin_compar_A(double  *vol){
 	if (k == 10) k = 0;
 
 
@@ -242,8 +242,6 @@ void sin_compar_A(uint32_t *vol){
 }
 //функция сравнения синусоиды канала B
 
-volatile uint32_t befor_B = 0;
-volatile uint32_t after_B = 0;
 // предидущие значения
 int kb = 0;                                  // счетчик измерений от ноля
 
@@ -255,7 +253,7 @@ short int flag_channel_B[3]={0};				//[0] - флаг состояния BА   0 - хорошо; 1 - 
 
 
 //--------- функция сравнения синуса канала A------------------------------------------------------------
-void sin_compar_B(uint32_t *vol){  /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
+void sin_compar_B(double *vol){  /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
 	//смотрим счетчик досчитал ли до 10 значений
 	if (kb < 10){
 		kb = 0;
