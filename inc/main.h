@@ -44,8 +44,9 @@
 
 #define KEY_DELAY 45
 
-#define REF_MAX 2100
-#define REF_MIN 1800
+#define REF_MAX 10
+#define REF_MIN -10
+#define ZIRO 0
 
 #define COUN_SINCH_ERR 20
 
@@ -59,5 +60,6 @@ void sin_compar_B(double *vol);
 void InitSynchA(void);
 void SynchA (double *vol);
 
+void SinQuadrant(int *x, int *y, double *buffA, double *buffB);
 
 #endif /* MAIN_H_ */
