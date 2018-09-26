@@ -17,7 +17,7 @@ extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
 extern short flag_switch_B;
 extern short flag_aktiv_channel;
 //переменные для хранения текущих значений измерения
-volatile double aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
+ double aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
 										// [0]-КАНАЛ А ФАЗА 1
 										// [1]-КАНАЛ А ФАЗА 2
@@ -26,7 +26,7 @@ volatile double aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные
 										// [4]-КАНАЛ В ФАЗА 2
 										// [5]-КАНАЛ В ФАЗА 3
 										// [6]-КАНАЛ С ФАЗА 1
-volatile double real_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
+ double real_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
 										// [0]-КАНАЛ А ФАЗА 1
 										// [1]-КАНАЛ А ФАЗА 2
@@ -53,29 +53,28 @@ int a1, a2, a3 = 0;			//указатели буфера канала А
 int b1, b2, b3 = 0;			//указатели буфера канала B
 int c1 = 0;					//указатели буфера канала С
 
-
-void send_buffer(uint32_t *vol_tmp_chan){
+void send_buffer(double *vol){
 
 	if(a1 == 201 ) a1 = 0;
-	buff_chanA1[a1] = vol_tmp_chan[0];
+	buff_chanA1[a1] = vol[0];
 	a1++;
 	if(a2 == 201 ) a2 = 0;
-	buff_chanA2[a2] = vol_tmp_chan[1];
+	buff_chanA1[a1] = vol[1];
 	a2++;
 	if(a3 == 201 ) a3 = 0;
-	buff_chanA3[a3] = vol_tmp_chan[2];
+	buff_chanA3[a3] = vol[2];
 	a3++;
 	if(b1 == 201 ) b1 = 0;
-	buff_chanB1[b1] = vol_tmp_chan[3];
+	buff_chanB1[b1] = vol[3];
 	b1++;
 	if(b2 == 201 ) b2 = 0;
-	buff_chanB2[b2] = vol_tmp_chan[4];
+	buff_chanB2[b2] = vol[4];
 	b2++;
 	if(b3 == 201 ) b3 = 0;
-	buff_chanB3[b3] = vol_tmp_chan[5];
+	buff_chanB3[b3] = vol[5];
 	b3++;
 	if(c1 == 201 ) c1 = 0;
-	buff_chanC1[c1] = vol_tmp_chan[6];
+	buff_chanC1[c1] = vol[6];
 	c1++;
 }
 
@@ -88,7 +87,7 @@ void Aver(void){
 	if (count_mes != 3 ){
 
 	    for (int i=0; i<7; i++){
-	    	real_tmp_chan[i] = double ADCBuffer[i] - double REF_ZIRO*U_QUANTUM;
+	    	real_tmp_chan[i] = (double)(ADCBuffer[i] - REF_ZIRO)*U_QUANTUM;
 	    	aver_tmp_chan[i] += real_tmp_chan[i];
 			}
 	    count_mes++;
@@ -99,9 +98,9 @@ void Aver(void){
 			aver_tmp_chan[i] = aver_tmp_chan[i]/3;
 			}
 		//тут вызываем функцию пересылки данных в буфер
-		SynchA(*aver_tmp_chan);
-		send_buffer(*aver_tmp_chan);
-		sin_compar_A(*aver_tmp_chan);	//Вызываем функцию сравнения канала А
+		SynchA(aver_tmp_chan);
+		send_buffer(aver_tmp_chan);
+		sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
 		//sin_compar_B(aver_tmp_chan);	//Вызываем функцию сравнения канала B
 		flag_end_aver = 0;
 		count_mes = 0;

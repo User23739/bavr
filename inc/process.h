@@ -11,7 +11,7 @@
 #define REF_ZIRO 2048
 #define U_QUANTUM 0.25513
 
-void send_buffer(uint32_t *vol_tmp_chan);
+void send_buffer(double *vol);
 void channel_status(void);
 void switch_channel(void);
 void Aver(void);
