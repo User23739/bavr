@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 //#include <math.h">
 
 /*----CMSIS è SPL----------*/

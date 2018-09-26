@@ -84,18 +84,20 @@ int count_mes = 0;
 short int flag_end_aver = 0;   //0-можно мерить; 1- нельзя мерить
 void Aver(void){
 
-	if (count_mes != 3 ){
+	if (count_mes != 4 ){
 
 	    for (int i=0; i<7; i++){
-	    	real_tmp_chan[i] = (double)(ADCBuffer[i] - REF_ZIRO)*U_QUANTUM;
-	    	aver_tmp_chan[i] += real_tmp_chan[i];
+	    	real_tmp_chan[i] = (double)ADCBuffer[i];
+	    	aver_tmp_chan[i] += (real_tmp_chan[i] - REF_ZIRO)*U_QUANTUM;
+
 			}
 	    count_mes++;
 	    flag_end_aver = 1;
 	}
 	else{
 		for (int i=0; i<7; i++){
-			aver_tmp_chan[i] = aver_tmp_chan[i]/3;
+			aver_tmp_chan[i] = aver_tmp_chan[i]/4;
+			aver_tmp_chan[i] = roundl(aver_tmp_chan[i]);
 			}
 		//тут вызываем функцию пересылки данных в буфер
 		SynchA(aver_tmp_chan);
