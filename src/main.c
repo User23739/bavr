@@ -104,6 +104,9 @@ void TIM4_IRQHandler(void){
 //Инициализация функции синхронизации
 short count_work_err = 0;  //счетчик ошибок синхронизации
 short err_flag_sinch = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
+short flag_sinch_chan_A = 0;					// 0-нет синхронизации; 1-есть синхронизация
+short flag_sinch_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
+
 
 void InitSynchA(){
 	count_work_err = 0;
@@ -168,8 +171,6 @@ short flag_mov_sin_A = 0;						    // 0 -идем вверх, 1 -идем вниз
 short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
 												//[1] - флаг состояния AB
 												//[2] - флаг состояния AC
-short flag_sinch_chan_A = 0;					// 0-нет синхронизации; 1-есть синхронизация
-short flag_sinch_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
 
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
 /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
@@ -360,10 +361,10 @@ int main(void){
 
 	while(1){
 
-				ADC_SoftwareStartConv(ADC1);
+				/*ADC_SoftwareStartConv(ADC1);
 	            adc_value = ADC_GetConversionValue(ADC1);
 	            sprintf(buffer, "%d\r\n", adc_value);
-	            USARTSend(buffer, sizeof(buffer));
+	            USARTSend(buffer, sizeof(buffer));*/
 
 		//channel_status();
 		//switch_channel();
