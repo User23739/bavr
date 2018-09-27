@@ -192,12 +192,17 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 
 
 void sin_compar_A(float  *vol){
-	if (k0 >= k) k = 0;
-	if (k == 0){
+	if (k0 >= 20) {
+		k0 = 0;
+		StopGTimer(GTIMER4);
+		flag_sinch_chan_A = 0;
+		send_buffer_flag(38);
+	}
+/*	if (k == 0){
 		k = sizeof(SIN_A_ref)/sizeof(float);
 		k0 = 0;
 	}
-
+*/
 
 /*Сравнение синусоиды положительная полуволна*/
 	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
@@ -206,7 +211,7 @@ void sin_compar_A(float  *vol){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(7);
 			k0++;
-			if (k0 >= k){
+			if (k0 >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(8);
@@ -216,7 +221,7 @@ void sin_compar_A(float  *vol){
 			flag_channel_A[0] = 1;
 			send_buffer_flag(9);
 			k0++;
-			if (k0 == k){
+			if (k0 >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(10);
@@ -248,8 +253,9 @@ void sin_compar_A(float  *vol){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(15);
 			k0++;
-			if (k0 == k){
+			if (k0 >= 20){
 				StopGTimer(GTIMER4);
+				flag_sinch_chan_A = 0;
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(16);
 			}
@@ -257,7 +263,7 @@ void sin_compar_A(float  *vol){
 		else{
 			flag_channel_A[0] = 1;
 			k0++;
-			if (k0 == k){
+			if (k0 >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(17);
@@ -298,12 +304,18 @@ short int flag_channel_B[3]={0};				//[0] - флаг состояния BА   0 - хорошо; 1 - 
 
 //--------- функция сравнения синуса канала A------------------------------------------------------------
 void sin_compar_B(float  *vol){
-	if (kb0 == kb) kb = 0;
-	if (kb == 0){
+	if (kb0 >= 20){
+		kb = 0;
+		StopGTimer(GTIMER5);
+		flag_sinch_chan_B = 0;
+		send_buffer_flag(39);
+
+	}
+	/*if (kb == 0){
 		kb = sizeof(SIN_A_ref)/sizeof(float);
 		kb0 = 0;
 	}
-
+*/
 
 /*Сравнение синусоиды положительная полуволна*/
 	if ((flag_mov_sin_B == 0) && (flag_sinch_chan_B == 1)){
@@ -312,7 +324,7 @@ void sin_compar_B(float  *vol){
 			flag_channel_B[0] = 0;
 			send_buffer_flag(22);
 			kb0++;
-			if (kb0 == kb){
+			if (kb0 >= 20){
 				StopGTimer(GTIMER5);
 				flag_sinch_chan_B = 0;
 				send_buffer_flag(23);
@@ -322,7 +334,7 @@ void sin_compar_B(float  *vol){
 			flag_channel_B[0] = 1;
 			send_buffer_flag(24);
 			kb0++;
-			if (kb0 == kb){
+			if (kb0 >= 20){
 				StopGTimer(GTIMER5);
 				flag_sinch_chan_B = 0;
 				send_buffer_flag(25);
@@ -354,7 +366,7 @@ void sin_compar_B(float  *vol){
 			flag_channel_B[0] = 0;
 			send_buffer_flag(30);
 			kb0++;
-			if (kb0 == kb){
+			if (kb0 >= 20){
 				StopGTimer(GTIMER5);
 				flag_sinch_chan_B = 0;
 				send_buffer_flag(31);
@@ -364,7 +376,7 @@ void sin_compar_B(float  *vol){
 			flag_channel_B[0] = 1;
 			send_buffer_flag(32);
 			kb0++;
-			if (kb0 == kb){
+			if (kb0 >= 20){
 				StopGTimer(GTIMER5);
 				flag_sinch_chan_B = 0;
 				send_buffer_flag(33);
