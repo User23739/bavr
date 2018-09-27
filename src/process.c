@@ -17,7 +17,7 @@ extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
 extern short flag_switch_B;
 extern short flag_aktiv_channel;
 //переменные для хранения текущих значений измерения
- double aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
+ float aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
 										// [0]-КАНАЛ А ФАЗА 1
 										// [1]-КАНАЛ А ФАЗА 2
@@ -26,7 +26,7 @@ extern short flag_aktiv_channel;
 										// [4]-КАНАЛ В ФАЗА 2
 										// [5]-КАНАЛ В ФАЗА 3
 										// [6]-КАНАЛ С ФАЗА 1
- double real_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
+ float real_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
 										// [0]-КАНАЛ А ФАЗА 1
 										// [1]-КАНАЛ А ФАЗА 2
@@ -38,42 +38,47 @@ extern short flag_aktiv_channel;
 
 // переменные  буфера
 // буфер кольцево для хранения данных измерения
-double buff_chanA1[201] = {0};
-double buff_chanA2[201] = {0};
-double buff_chanA3[201] = {0};
+float buff_chanA1[201] = {0};
+float buff_chanA2[201] = {0};
+float buff_chanA3[201] = {0};
 
-double buff_chanB1[201] = {0};
-double buff_chanB2[201] = {0};
-double buff_chanB3[201] = {0};
+float buff_chanB1[201] = {0};
+float buff_chanB2[201] = {0};
+float buff_chanB3[201] = {0};
 
-double buff_chanC1[201] = {0};
+float buff_chanC1[201] = {0};
 
 //указатель кольцевого буфера
 int a1, a2, a3 = 0;			//указатели буфера канала А
 int b1, b2, b3 = 0;			//указатели буфера канала B
 int c1 = 0;					//указатели буфера канала С
 
-void send_buffer(double *vol){
+void send_buffer(float *vol){
 
-	if(a1 == 201 ) a1 = 0;
+	//static int a1, a2, a3;			//указатели буфера канала А
+	//static int b1, b2, b3;			//указатели буфера канала B
+	//static int c1;					//указатели буфера канала С
+
+
+	if(a1 >= 200 ) a1 = 0;
 	buff_chanA1[a1] = vol[0];
 	a1++;
-	if(a2 == 201 ) a2 = 0;
-	buff_chanA1[a1] = vol[1];
+	if(a2  >= 200 ) a2 = 0;
+	buff_chanA2[a2] = vol[1];
 	a2++;
-	if(a3 == 201 ) a3 = 0;
+	if(a3  >= 200) a3 = 0;
 	buff_chanA3[a3] = vol[2];
 	a3++;
-	if(b1 == 201 ) b1 = 0;
+	if(b1  >= 200) b1 = 0;
 	buff_chanB1[b1] = vol[3];
 	b1++;
-	if(b2 == 201 ) b2 = 0;
+	if(b2  >= 200) b2 = 0;
 	buff_chanB2[b2] = vol[4];
 	b2++;
-	if(b3 == 201 ) b3 = 0;
+	if(b3  >= 200) b3 = 0;
 	buff_chanB3[b3] = vol[5];
 	b3++;
-	if(c1 == 201 ) c1 = 0;
+	if(c1  >= 200 ) c1 = 0;
 	buff_chanC1[c1] = vol[6];
 	c1++;
 }
@@ -84,10 +89,10 @@ int count_mes = 0;
 short int flag_end_aver = 0;   //0-можно мерить; 1- нельзя мерить
 void Aver(void){
 
-	if (count_mes != 4 ){
+	if (count_mes != 2 ){
 
 	    for (int i=0; i<7; i++){
-	    	real_tmp_chan[i] = (double)ADCBuffer[i];
+	    	real_tmp_chan[i] = (float)ADCBuffer[i];
 	    	aver_tmp_chan[i] += (real_tmp_chan[i] - REF_ZIRO)*U_QUANTUM;
 
 			}
@@ -96,12 +101,12 @@ void Aver(void){
 	}
 	else{
 		for (int i=0; i<7; i++){
-			aver_tmp_chan[i] = aver_tmp_chan[i]/4;
+			aver_tmp_chan[i] = aver_tmp_chan[i]/2;
 			aver_tmp_chan[i] = roundl(aver_tmp_chan[i]);
 			}
 		//тут вызываем функцию пересылки данных в буфер
 
-		send_buffer(aver_tmp_chan);
+		send_buffer(&aver_tmp_chan[0]);
 		SynchA(aver_tmp_chan);
 		SinQuadrant(&a1, &b1, buff_chanA1, buff_chanB1);
 		sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А

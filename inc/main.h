@@ -54,12 +54,12 @@
 
 //Сигнатуры функций
 void USARTSend(const unsigned char *pucBuffer);
-void sin_compar_A(double *vol);
-void sin_compar_B(double *vol);
+void sin_compar_A(float *vol);
+void sin_compar_B(float *vol);
 
 void InitSynchA(void);
-void SynchA (double *vol);
+void SynchA (float *vol);
 
-void SinQuadrant(int *x, int *y, double *buffA, double *buffB);
+void SinQuadrant(int *x, int *y, float *buffA, float *buffB);
 
 #endif /* MAIN_H_ */
