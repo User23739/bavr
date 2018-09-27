@@ -351,13 +351,13 @@ int main(void){
 // инициализация переферии
 
 	SYSTEM_Init();
-	//RELAY_Init();
+	RELAY_Init();
 	ADC_DMA_Init();
 	TIMER_Init();
 	RS232_Init();
-	//InitGPIO();
+	InitGPIO();
 	InitGTimers();  // инициализируем глобальные таймеры
-	//InitKey();		//инициализация каналов переключения (отключение)
+	InitKey();		//инициализация каналов переключения (отключение)
 	InitSynchA();
 
 	while(1){
@@ -367,13 +367,13 @@ int main(void){
 	            sprintf(buffer, "%d\r\n", adc_value);
 	            USARTSend(buffer, sizeof(buffer));*/
 
-		//channel_status();
-		//switch_channel();
-		//channel_A_ON();
-		//channel_B_ON();
-		//channel_A_OFF();
-		//channel_B_OFF();
-		//ButControl();
+		channel_status();
+		switch_channel();
+		channel_A_ON();
+		channel_B_ON();
+		channel_A_OFF();
+		channel_B_OFF();
+		ButControl();
 	}
 }
 

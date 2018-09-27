@@ -42,7 +42,7 @@
 
 
 
-#define KEY_DELAY 45
+#define KEY_DELAY 60
 
 #define REF_MAX 10
 #define REF_MIN -10
