@@ -52,7 +52,26 @@ double shift20 = 48;
 
 
 //-------------------------
+/*тестовый буфер флагов */
+// буфер кольцево для хранения данных измерения
+char buff_flag_[2000] = {0};
 
+
+
+
+//указатель кольцевого буфера
+int a1 = 0;
+
+
+
+void send_buffer_flag(char *vol){
+
+	if(a1 == 2001 ) a1 = 0;
+	buff_flag_[a1] = vol;
+	a1++;
+
+
+}
 
 
 
@@ -66,18 +85,6 @@ void TIM4_IRQHandler(void){
     }
 }
 
-/*
- Поиск 0 и синхронизация */
-/*	if (flag_sinch_chan_A == 0)	{
-		if((SIN_A_ref_up[0]-shift10) < vol[0] && (SIN_A_ref_up[0]+shift10) > vol[0]) {
-			flag_sinch_chan_A =1;
-			k = 0;
-		}
-		else{
-			flag_sinch_chan_A = 0;
-		}
-	}
-*/
 
 
 /*Функция синхронизации */
@@ -103,6 +110,7 @@ void SynchA (double *vol){
 	if (flag_sinch_chan_A == 0){
 		if ((REF_MIN < vol[0]) && (vol[0] < REF_MAX)){
 			flag_sinch_chan_A = 1;
+			send_buffer_flag("err_flag_sinch_A = 0||1");
 			err_flag_sinch_A = 0;
 			StartGTimer(GTIMER4);
 		}
@@ -115,6 +123,7 @@ void SynchA (double *vol){
 	if (flag_sinch_chan_B == 0){
 			if ((REF_MIN < vol[3]) && (vol[3] < REF_MAX)){
 				flag_sinch_chan_B = 1;
+				send_buffer_flag("err_flag_sinch_B = 0||2");
 				err_flag_sinch_B = 0;
 				StartGTimer(GTIMER5);
 			}
@@ -134,18 +143,22 @@ void SinQuadrant(int *x, int *y, double *buffA, double *buffB){
 		tmpA--;
 		if(buffA[tmpA] > ZIRO){
 			flag_mov_sin_A = 0;
+			send_buffer_flag("flag_mov_sin_A = 0||3");
 		}
 		else{
 			flag_mov_sin_A = 1;
+			send_buffer_flag("flag_mov_sin_A = 1||4");
 		}
 	}
 	if(flag_sinch_chan_B == 1){
 		tmpB--;
 		if(buffB[tmpB] > ZIRO){
 			flag_mov_sin_B = 0;
+			send_buffer_flag("flag_mov_sin_B = 0||5");
 		}
 		else{
 			flag_mov_sin_B = 1;
+			send_buffer_flag("flag_mov_sin_B = 1||6");
 		}
 	}
 
@@ -191,33 +204,41 @@ void sin_compar_A(double  *vol){
 		//----------------------------------------------AA-----------------------------------------------------
 		if((SIN_A_ref[k0]-shift10) < vol[0] && (SIN_A_ref[k0]+shift10) > vol[0]){
 			flag_channel_A[0] = 0;
+			send_buffer_flag("flag_channel_A[0] = 0||7");
 			k0++;
 			if (k0 == k){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
+				send_buffer_flag("flag_sinch_chan_A = 0||8");
 			}
 		}
 		else{
 			flag_channel_A[0] = 1;
+			send_buffer_flag("flag_channel_A[0] = 1||9");
 			k0++;
 			if (k0 == k){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
+				send_buffer_flag("flag_sinch_chan_A = 0||10");
 			}
 		}
 		//---------------------------------------------AB------------------------------------------------------
 		if((SIN_B_ref[k0]-shift10) < vol[1] && (SIN_B_ref[k0]+shift10) > vol[1]){
 			flag_channel_A[1] = 0;
+			send_buffer_flag("flag_channel_A[1] = 0||11");
 		}
 		else{
 			flag_channel_A[1] = 1;
+			send_buffer_flag("flag_channel_A[1] = 1||12");
 		}
 		//---------------------------------------------AC------------------------------------------------------
 		if((SIN_C_ref[k0]-shift10) < vol[2] && (SIN_C_ref[k0]+shift10) > vol[2]) {
 			flag_channel_A[2] = 0;
+			send_buffer_flag("flag_channel_A[2] = 0||13");
 		}
 		else{
 			flag_channel_A[2] = 1;
+			send_buffer_flag("flag_channel_A[2] = 1||14");
 		}
 	}
 /*Сравнение синусоиды отрицательная полуволна*/
@@ -225,27 +246,40 @@ void sin_compar_A(double  *vol){
 		//----------------------------------------------AA-----------------------------------------------------
 		if(((SIN_A_ref[k0]*-1)-shift10) < vol[0] && ((SIN_A_ref[k0]*-1)+shift10) > vol[0]){
 			flag_channel_A[0] = 0;
+			send_buffer_flag("flag_channel_A[0] = 0||15");
 			k0++;
-			if (k == 10) flag_sinch_chan_A = 0;
+			if (k0 == k){
+				StopGTimer(GTIMER4);
+				flag_sinch_chan_A = 0;
+				send_buffer_flag("flag_sinch_chan_A = 0||16");
+			}
 		}
 		else{
 			flag_channel_A[0] = 1;
 			k0++;
-			if (k == 10) flag_sinch_chan_A = 0;
+			if (k0 == k){
+				StopGTimer(GTIMER4);
+				flag_sinch_chan_A = 0;
+				send_buffer_flag("flag_sinch_chan_A = 0||17");
+			}
 		}
 		//-----------------------------------------------AB----------------------------------------------------
 		if(((SIN_B_ref[k0]*-1)-shift10) < vol[1] && ((SIN_A_ref[k0]*-1)+shift10) > vol[1]){
 			flag_channel_A[1] = 0;
+			send_buffer_flag("flag_channel_A[1] = 0||18");
 		}
 		else{
 			flag_channel_A[1] = 1;
+			send_buffer_flag("flag_channel_A[1] = 1||19");
 		}
 		//-----------------------------------------------AC----------------------------------------------------
 		if(((SIN_C_ref[k0]*-1)-shift10) < vol[2] && ((SIN_C_ref[k0]*-1)+shift10) > vol[2]){
 			flag_channel_A[2] = 0;
+			send_buffer_flag("flag_channel_A[2] = 0||20");
 		}
 		else{
 			flag_channel_A[2] = 1;
+			send_buffer_flag("flag_channel_A[2] = 1||21");
 		}
 	}
 
@@ -276,33 +310,41 @@ void sin_compar_B(double  *vol){
 		//----------------------------------------------BA-----------------------------------------------------
 		if((SIN_A_ref[kb0]-shift10) < vol[3] && (SIN_A_ref[kb0]+shift10) > vol[3]){
 			flag_channel_B[0] = 0;
+			send_buffer_flag("flag_channel_B[0] = 0||22");
 			kb0++;
 			if (kb0 == kb){
 				StopGTimer(GTIMER5);
 				flag_sinch_chan_B = 0;
+				send_buffer_flag("flag_sinch_chan_B = 0||23");
 			}
 		}
 		else{
 			flag_channel_B[0] = 1;
+			send_buffer_flag("flag_channel_B[0] = 1||24");
 			kb0++;
 			if (kb0 == kb){
 				StopGTimer(GTIMER5);
 				flag_sinch_chan_B = 0;
+				send_buffer_flag("flag_sinch_chan_B = 0||25");
 			}
 		}
 		//---------------------------------------------BB------------------------------------------------------
 		if((SIN_B_ref[kb0]-shift10) < vol[4] && (SIN_B_ref[kb0]+shift10) > vol[4]){
 			flag_channel_B[1] = 0;
+			send_buffer_flag("flag_channel_B[1] = 0||26");
 		}
 		else{
 			flag_channel_B[1] = 1;
+			send_buffer_flag("flag_channel_B[1] = 1||27");
 		}
 		//---------------------------------------------BC------------------------------------------------------
 		if((SIN_C_ref[kb0]-shift10) < vol[5] && (SIN_C_ref[kb0]+shift10) > vol[5]) {
 			flag_channel_B[2] = 0;
+			send_buffer_flag("flag_channel_B[2] = 0||28");
 		}
 		else{
 			flag_channel_B[2] = 1;
+			send_buffer_flag("flag_channel_B[2] = 1||29");
 		}
 	}
 /*Сравнение синусоиды отрицательная полуволна*/
@@ -310,33 +352,41 @@ void sin_compar_B(double  *vol){
 		//----------------------------------------------BA-----------------------------------------------------
 		if(((SIN_A_ref[kb0]*-1)-shift10) < vol[3] && ((SIN_A_ref[kb0]*-1)+shift10) > vol[3]){
 			flag_channel_B[0] = 0;
+			send_buffer_flag("flag_channel_B[0] = 0||30");
 			kb0++;
 			if (kb0 == kb){
 				StopGTimer(GTIMER5);
 				flag_sinch_chan_B = 0;
+				send_buffer_flag("flag_sinch_chan_B = 0||31");
 			}
 		}
 		else{
 			flag_channel_B[0] = 1;
+			send_buffer_flag("flag_channel_B[0] = 1||32");
 			kb0++;
 			if (kb0 == kb){
 				StopGTimer(GTIMER5);
 				flag_sinch_chan_B = 0;
+				send_buffer_flag("flag_sinch_chan_B = 0||33");
 			}
 		}
 		//-----------------------------------------------BB----------------------------------------------------
 		if(((SIN_B_ref[kb0]*-1)-shift10) < vol[4] && ((SIN_A_ref[kb0]*-1)+shift10) > vol[4]){
 			flag_channel_B[1] = 0;
+			send_buffer_flag("flag_channel_B[1] = 0||34");
 		}
 		else{
 			flag_channel_B[1] = 1;
+			send_buffer_flag("flag_channel_B[1] = 1||35");
 		}
 		//-----------------------------------------------BC----------------------------------------------------
 		if(((SIN_C_ref[kb0]*-1)-shift10) < vol[5] && ((SIN_C_ref[kb0]*-1)+shift10) > vol[5]){
 			flag_channel_B[2] = 0;
+			send_buffer_flag("flag_channel_B[2] = 0||36");
 		}
 		else{
 			flag_channel_B[2] = 1;
+			send_buffer_flag("flag_channel_B[2] = 1||37");
 		}
 	}
 
