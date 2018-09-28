@@ -118,9 +118,10 @@ void SynchA (float *vol){
 			count_work_A_err++;
 			if(count_work_A_err < COUN_SINCH_ERR) err_flag_sinch_A = 1;
 		}
+
 	}
 
-	if (flag_sinch_chan_B == 0){
+	/*if (flag_sinch_chan_B == 0){
 			if ((REF_MIN < vol[3]) && (vol[3] < REF_MAX)){
 				flag_sinch_chan_B = 1;
 				send_buffer_flag(2);
@@ -131,35 +132,40 @@ void SynchA (float *vol){
 				count_work_B_err++;
 				if(count_work_B_err < COUN_SINCH_ERR) err_flag_sinch_B = 1;
 			}
-		}
+		}*/
 
 }
 /*Функция определения квадранта синуса*/
+int c_out = 0;
 
 void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 	int tmpA = *x;
 	int tmpB = *y;
-	if(flag_sinch_chan_A == 1){
-		tmpA--;
-		if(buffA[tmpA] > ZIRO){
-			flag_mov_sin_A = 0;
-			send_buffer_flag(3);
+	if (c_out == 0){
+		if(flag_sinch_chan_A == 1){
+			tmpA--;
+			if(buffA[tmpA] > ZIRO){
+				flag_mov_sin_A = 0;
+				c_out = 1;
+				send_buffer_flag(3);
+			}
+			else{
+				flag_mov_sin_A = 1;
+				c_out = 1;
+				send_buffer_flag(4);
+			}
 		}
-		else{
-			flag_mov_sin_A = 1;
-			send_buffer_flag(4);
-		}
-	}
-	if(flag_sinch_chan_B == 1){
-		tmpB--;
-		if(buffB[tmpB] > ZIRO){
-			flag_mov_sin_B = 0;
-			send_buffer_flag(5);
-		}
-		else{
-			flag_mov_sin_B = 1;
-			send_buffer_flag(6);
-		}
+		/*if(flag_sinch_chan_B == 1){
+			tmpB--;
+			if(buffB[tmpB] > ZIRO){
+				flag_mov_sin_B = 0;
+				send_buffer_flag(5);
+			}
+			else{
+				flag_mov_sin_B = 1;
+				send_buffer_flag(6);
+			}
+		}*/
 	}
 
 }
@@ -196,6 +202,7 @@ void sin_compar_A(float  *vol){
 		k0 = 0;
 		StopGTimer(GTIMER4);
 		flag_sinch_chan_A = 0;
+		c_out = 0;
 		send_buffer_flag(38);
 	}
 /*	if (k == 0){
@@ -228,7 +235,7 @@ void sin_compar_A(float  *vol){
 			}
 		}
 		//---------------------------------------------AB------------------------------------------------------
-		if((SIN_B_ref[k0]-shift10) < vol[1] && (SIN_B_ref[k0]+shift10) > vol[1]){
+		/*if((SIN_B_ref[k0]-shift10) < vol[1] && (SIN_B_ref[k0]+shift10) > vol[1]){
 			flag_channel_A[1] = 0;
 			send_buffer_flag(11);
 		}
@@ -244,7 +251,7 @@ void sin_compar_A(float  *vol){
 		else{
 			flag_channel_A[2] = 1;
 			send_buffer_flag(14);
-		}
+		}*/
 	}
 /*Сравнение синусоиды отрицательная полуволна*/
 	if ((flag_mov_sin_A == 1) && (flag_sinch_chan_A == 1)){
@@ -270,7 +277,7 @@ void sin_compar_A(float  *vol){
 			}
 		}
 		//-----------------------------------------------AB----------------------------------------------------
-		if(((SIN_B_ref[k0]*-1)-shift10) < vol[1] && ((SIN_A_ref[k0]*-1)+shift10) > vol[1]){
+		/*if(((SIN_B_ref[k0]*-1)-shift10) < vol[1] && ((SIN_A_ref[k0]*-1)+shift10) > vol[1]){
 			flag_channel_A[1] = 0;
 			send_buffer_flag(18);
 		}
@@ -286,8 +293,9 @@ void sin_compar_A(float  *vol){
 		else{
 			flag_channel_A[2] = 1;
 			send_buffer_flag(21);
-		}
+		}*/
 	}
+
 
 }
 //функция сравнения синусоиды канала B
@@ -438,6 +446,7 @@ int main(void){
 		//ButControl();
 	}
 }
+
 
 
 

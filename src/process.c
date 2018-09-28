@@ -110,7 +110,7 @@ void Aver(void){
 		SynchA(aver_tmp_chan);
 		SinQuadrant(&a1, &b1, buff_chanA1, buff_chanB1);
 		sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
-		sin_compar_B(aver_tmp_chan);	//Вызываем функцию сравнения канала B
+		//sin_compar_B(aver_tmp_chan);	//Вызываем функцию сравнения канала B
 		flag_end_aver = 0;
 		count_mes = 0;
 		for (int i=0; i<7; i++) aver_tmp_chan[i] = 0;
