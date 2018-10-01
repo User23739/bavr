@@ -214,7 +214,7 @@ void sin_compar_A(float  *vol){
 /*—равнение синусоиды положительна€ полуволна*/
 	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
-		if((SIN_A_ref[k0]-shift10) < vol[0] && (SIN_A_ref[k0]+shift10) > vol[0]){
+		if((SIN_A_ref[k0]-shift15) < vol[0] && (SIN_A_ref[k0]+shift15) > vol[0]){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(7);
 			k0++;
@@ -256,7 +256,7 @@ void sin_compar_A(float  *vol){
 /*—равнение синусоиды отрицательна€ полуволна*/
 	if ((flag_mov_sin_A == 1) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
-		if(((SIN_A_ref[k0]*-1)-shift10) < vol[0] && ((SIN_A_ref[k0]*-1)+shift10) > vol[0]){
+		if(((SIN_A_ref[k0]*-1)-shift15) < vol[0] && ((SIN_A_ref[k0]*-1)+shift15) > vol[0]){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(15);
 			k0++;
