@@ -120,7 +120,7 @@ void ADC_DMA_Init( void )
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 7,  ADC_SampleTime_3Cycles);
 
 	ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
-	ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div2;
+	ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div4;
 	ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_1;
 	ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
 	ADC_CommonInit(&ADC_CommonInitStructure);
