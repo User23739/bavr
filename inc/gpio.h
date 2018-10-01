@@ -11,6 +11,10 @@
 #define BUT1 					GPIO_Pin_9		///<Кнопка переключения приоритетов
 #define BUT1_PORT				GPIOE			///<Порт управления кнопкой приоритета
 
+#define LED1 					GPIO_Pin_14		///<Кнопка переключения приоритетов
+#define LED1_PORT				GPIOE			///<Порт управления кнопкой приоритета
+
+
 void InitGPIO(void);
 void ButControl(void);
 

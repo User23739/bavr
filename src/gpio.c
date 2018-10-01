@@ -25,6 +25,12 @@ void InitGPIO(void){
 	GPIO_Init(BUT1_PORT, &GPIO_InitStructure);
 
 
+	GPIO_InitStructure.GPIO_Pin = 		LED1;
+	GPIO_InitStructure.GPIO_Mode = 		GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_Speed =		GPIO_Speed_50MHz;
+	GPIO_Init(LED1_PORT, &GPIO_InitStructure);
+
+
 }
 
 void ButControl(void){

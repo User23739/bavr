@@ -79,8 +79,11 @@ void TIM4_IRQHandler(void){
 
     if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)
     {
+
+    	GPIO_SetBits(LED1_PORT, LED1);
     	Aver();						//Вызвываем функцию усреднения
     	ProcessTimers();			//Вызываем функцию увеличения значений таймера
+    	GPIO_ResetBits(LED1_PORT, LED1);
     	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
     }
 }
@@ -230,7 +233,7 @@ void sin_compar_A(float  *vol){
 			flag_channel_A[0] = 1;
 			send_buffer_flag(9);
 			send_buffer_flag((int)vol[0]);
-			send_buffer_flag((int)SIN_A_ref[k0]);
+			send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			k0++;
 			if (k0 >= 20){
 				StopGTimer(GTIMER4);
@@ -280,7 +283,7 @@ void sin_compar_A(float  *vol){
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(17);
 				send_buffer_flag((int)vol[0]);
-				send_buffer_flag((int)SIN_A_ref[k0]);
+				send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			}
 		}
 		//-----------------------------------------------AB----------------------------------------------------
