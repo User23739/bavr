@@ -5,6 +5,16 @@
 
 //-------переменныеи и функции для тестов------------------------------------
 volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
+extern float buff_chanA1[201];
+extern float buff_chanA2[201];
+extern float buff_chanA3[201];
+
+extern float buff_chanB1[201];
+extern float buff_chanB2[201];
+extern float buff_chanB3[201];
+extern float aver_tmp_chan[7];
+extern int a1, a2, a3;			//указатели буфера канала А
+extern int b1, b2, b3;
 
 
 
@@ -81,16 +91,37 @@ void TIM4_IRQHandler(void){
     {
 
     	GPIO_SetBits(LED1_PORT, LED1);   //бит установил
-    	Aver();						//Вызвываем функцию усреднения
     	ProcessTimers();			//Вызываем функцию увеличения значений таймера
+    	Control();						//Вызвываем функцию усреднения
     	GPIO_ResetBits(LED1_PORT, LED1);    //бит снял
     	TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
     }
 }
 
 
+/*Функция контроллер*/
+void Control(){
+	Aver();
+	send_buffer(&aver_tmp_chan[0]);
+	SynchA(aver_tmp_chan);
+	SinQuadrant(&a1, &b1, buff_chanA1, buff_chanB1);
+	sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
+	//sin_compar_B(aver_tmp_chan);	//Вызываем функцию сравнения канала B
+
+
+
+}
+
+
+
 
 /*Функция синхронизации */
+
+
+
+
+
+
 //Инициализация функции синхронизации
 short count_work_A_err = 0;  //счетчик ошибок синхронизации
 short err_flag_sinch_A = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
@@ -201,7 +232,7 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 
 
 void sin_compar_A(float  *vol){
-	if (k0 >= 20) {
+	if (GetGTimer(GTIMER4) >= 20) {
 		k0 = 0;
 		StopGTimer(GTIMER4);
 		flag_sinch_chan_A = 0;
@@ -223,7 +254,7 @@ void sin_compar_A(float  *vol){
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)SIN_A_ref[k0]);
 			k0++;
-			if (k0 >= 20){
+			if (GetGTimer(GTIMER4) >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(8);
@@ -235,7 +266,7 @@ void sin_compar_A(float  *vol){
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			k0++;
-			if (k0 >= 20){
+			if (GetGTimer(GTIMER4) >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(10);
@@ -269,7 +300,7 @@ void sin_compar_A(float  *vol){
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)SIN_A_ref[k0]);
 			k0++;
-			if (k0 >= 20){
+			if (GetGTimer(GTIMER4) >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(16);
@@ -278,7 +309,7 @@ void sin_compar_A(float  *vol){
 		else{
 			flag_channel_A[0] = 1;
 			k0++;
-			if (k0 >= 20){
+			if (GetGTimer(GTIMER4) >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(17);

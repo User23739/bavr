@@ -53,6 +53,7 @@
 
 
 //Сигнатуры функций
+void Control(void);
 void USARTSend(const unsigned char *pucBuffer);
 void sin_compar_A(float *vol);
 void sin_compar_B(float *vol);
