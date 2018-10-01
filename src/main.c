@@ -66,7 +66,7 @@ int a11 = 0;
 
 void send_buffer_flag(short *vol){
 
-	if(a11 >= 2001 ) a11 = 0;
+	if(a11 >= 501 ) a11 = 0;
 	buff_flag_[a11] = vol;
 	a11++;
 

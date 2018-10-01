@@ -23,12 +23,12 @@ void ADC_DMA_Init( void )
     DMA_InitStructure.DMA_DIR                   = DMA_DIR_PeripheralToMemory;
     DMA_InitStructure.DMA_PeripheralInc         = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc             = DMA_MemoryInc_Enable;
-    DMA_InitStructure.DMA_MemoryDataSize        = DMA_MemoryDataSize_Word;
+    DMA_InitStructure.DMA_MemoryDataSize        = DMA_PeripheralDataSize_Word;
     DMA_InitStructure.DMA_Mode                  = DMA_Mode_Circular;
     DMA_InitStructure.DMA_Priority              = DMA_Priority_High;
     DMA_InitStructure.DMA_FIFOMode              = DMA_FIFOMode_Disable;
-    DMA_InitStructure.DMA_FIFOThreshold         = DMA_FIFOThreshold_HalfFull;
-    DMA_InitStructure.DMA_PeripheralDataSize    = DMA_PeripheralDataSize_Word;
+    DMA_InitStructure.DMA_FIFOThreshold         = DMA_PeripheralDataSize_Word;
+    DMA_InitStructure.DMA_PeripheralDataSize    = DMA_PeripheralDataSize_HalfWord;
     DMA_InitStructure.DMA_MemoryBurst           = DMA_MemoryBurst_Single;
 	DMA_InitStructure.DMA_PeripheralBurst       = DMA_PeripheralBurst_Single;
 	DMA_Init(DMA2_Stream0, &DMA_InitStructure);
@@ -120,7 +120,7 @@ void ADC_DMA_Init( void )
 	ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 7,  ADC_SampleTime_3Cycles);
 
 	ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
-	ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div4;
+	ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div2;
 	ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_1;
 	ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
 	ADC_CommonInit(&ADC_CommonInitStructure);
