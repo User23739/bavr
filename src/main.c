@@ -232,7 +232,8 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 
 
 void sin_compar_A(float  *vol){
-	if (GetGTimer(GTIMER4) >= 20) {
+
+	if (k0 >= 20) {
 		k0 = 0;
 		StopGTimer(GTIMER4);
 		flag_sinch_chan_A = 0;
@@ -251,10 +252,12 @@ void sin_compar_A(float  *vol){
 		if((SIN_A_ref[k0]-shift20) < vol[0] && (SIN_A_ref[k0]+shift20) > vol[0]){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(7);
+			send_buffer_flag(k0);
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)SIN_A_ref[k0]);
 			k0++;
-			if (GetGTimer(GTIMER4) >= 20){
+			k = GetGTimer(GTIMER4);
+			if (k0 >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(8);
@@ -263,10 +266,11 @@ void sin_compar_A(float  *vol){
 		else{
 			flag_channel_A[0] = 1;
 			send_buffer_flag(9);
+			send_buffer_flag(k0);
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			k0++;
-			if (GetGTimer(GTIMER4) >= 20){
+			if (k0 >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(10);
@@ -297,10 +301,11 @@ void sin_compar_A(float  *vol){
 		if(((SIN_A_ref[k0]*-1)-shift20) < vol[0] && ((SIN_A_ref[k0]*-1)+shift20) > vol[0]){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(15);
+			send_buffer_flag(k0);
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)SIN_A_ref[k0]);
 			k0++;
-			if (GetGTimer(GTIMER4) >= 20){
+			if (k0 >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(16);
@@ -309,10 +314,11 @@ void sin_compar_A(float  *vol){
 		else{
 			flag_channel_A[0] = 1;
 			k0++;
-			if (GetGTimer(GTIMER4) >= 20){
+			if (k0 >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(17);
+				send_buffer_flag(k0);
 				send_buffer_flag((int)vol[0]);
 				send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			}
