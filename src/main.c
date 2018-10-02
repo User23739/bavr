@@ -184,8 +184,13 @@ void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 	int tmpB = *y;
 	if (c_out == 0){
 		if(flag_sinch_chan_A == 1){
-			tmpA--;
-			tmpA--;
+			if((tmpA == 0) ||(tmpA == 1)) {
+				tmpA = 198;
+			}
+			else{
+				tmpA--;
+				tmpA--;
+			}
 			if(buffA[tmpA] > ZIRO){
 				flag_mov_sin_A = 0;
 				c_out = 1;
