@@ -36,7 +36,18 @@ extern short flag_aktiv_channel;
 										// [5]-КАНАЛ В ФАЗА 3
 										// [6]-КАНАЛ С ФАЗА 1
 
-// переменные  буфера
+//Нормализация входных данных
+
+void TransInData(void){
+	for (int i=0; i<7; i++){
+		real_tmp_chan[i] = roundl(((float)ADCBuffer[i] - REF_ZIRO)*U_QUANTUM);
+		}
+
+}
+
+
+
+ // переменные  буфера
 // буфер кольцево для хранения данных измерения
 float buff_chanA1[201] = {0};
 float buff_chanA2[201] = {0};
@@ -48,12 +59,15 @@ float buff_chanB3[201] = {0};
 
 float buff_chanC1[201] = {0};
 
+
+
+
 //указатель кольцевого буфера
 int a1, a2, a3 = 0;			//указатели буфера канала А
 int b1, b2, b3 = 0;			//указатели буфера канала B
 int c1 = 0;					//указатели буфера канала С
 
-void send_buffer(float *vol){
+void BuffData(float *vol){
 
 	//static int a1, a2, a3;			//указатели буфера канала А
 	//static int b1, b2, b3;			//указатели буфера канала B
@@ -83,31 +97,42 @@ void send_buffer(float *vol){
 	c1++;
 }
 
+
+
+
+
+
+
+
 //функция усреднения и фильтация фходных значений
 
-int count_mes = 0;
-short int flag_end_aver = 0;   //0-можно мерить; 1- нельзя мерить
+//int count_mes = 0;
+//short int flag_end_aver = 0;   //0-можно мерить; 1- нельзя мерить
 void Aver(void){
+	int xa1 = a1;
+	int xa2 = a2;
+	int xa3 = a3;
+	int xb1 = b1;
+	int xb2 = b2;
+	int xb3 = b3;
+	int xc1 = c1;
 
-	if (count_mes != 2 ){
+	aver_tmp_chan[0] = roundl((buff_chanA1[xa1]+buff_chanA1[xa1-1])/AVER_N);
+	aver_tmp_chan[1] = roundl((buff_chanA1[xa2]+buff_chanA1[xa2-1])/AVER_N);
+	aver_tmp_chan[2] = roundl((buff_chanA1[xa3]+buff_chanA1[xa3-1])/AVER_N);
+	aver_tmp_chan[3] = roundl((buff_chanA1[xb1]+buff_chanA1[xb1-1])/AVER_N);
+	aver_tmp_chan[4] = roundl((buff_chanA1[xb2]+buff_chanA1[xb2-1])/AVER_N);
+	aver_tmp_chan[5] = roundl((buff_chanA1[xb3]+buff_chanA1[xb3-1])/AVER_N);
+	aver_tmp_chan[6] = roundl((buff_chanA1[xc1]+buff_chanA1[xc1-1])/AVER_N);
 
-	    for (int i=0; i<7; i++){
-	    	real_tmp_chan[i] = (float)ADCBuffer[i];
-	    	aver_tmp_chan[i] += (real_tmp_chan[i] - REF_ZIRO)*U_QUANTUM;
 
-			}
-	    count_mes++;
-	    flag_end_aver = 1;
-	}
-	else{
-		for (int i=0; i<7; i++){
+	/*for (int i=0; i<7; i++){
 			aver_tmp_chan[i] = aver_tmp_chan[i]/2;
 			aver_tmp_chan[i] = roundl(aver_tmp_chan[i]);
 			}
-		flag_end_aver = 0;
-		count_mes = 0;
-		for (int i=0; i<7; i++) aver_tmp_chan[i] = 0;
-	}
+
+	//for (int i=0; i<7; i++) aver_tmp_chan[i] = 0;*/
+
 
 
 }
@@ -129,7 +154,7 @@ void channel_status(void){
 			if (flag_channel_A[0]==1) count_err_A[1] += 1;
 			if (flag_channel_A[1]==1) count_err_A[2] += 1;
 			if (flag_channel_A[2]==1) count_err_A[3] += 1;
-			if ((count_work == 3)&&((count_err_A[1] == 3)||(count_err_A[2] == 3)||(count_err_A[3] == 3))) flag_status_chann_A = 1 ;
+			if ((count_work == ERR_C_CH)&&((count_err_A[1] == ERR_C_CH)||(count_err_A[2] == ERR_C_CH)||(count_err_A[3] == ERR_C_CH))) flag_status_chann_A = 1 ;
 
 		}
 
@@ -140,10 +165,10 @@ void channel_status(void){
 			if (flag_channel_B[0]==1) count_err_B[1] += 1;
 			if (flag_channel_B[1]==1) count_err_B[2] += 1;
 			if (flag_channel_B[2]==1) count_err_B[3] += 1;
-			if ((count_work == 3)&&((count_err_B[1] == 3)||(count_err_B[2] == 3)||(count_err_B[3] == 3))) flag_status_chann_B = 1 ;
+			if ((count_work == ERR_C_CH)&&((count_err_B[1] == ERR_C_CH)||(count_err_B[2] == ERR_C_CH)||(count_err_B[3] == ERR_C_CH))) flag_status_chann_B = 1 ;
 
 		}
-		if (count_work == 3) {
+		if (count_work == ERR_C_CH) {
 			for (int i=0; i<4; i++)count_err_A[i] = 0;
 			for (int i=0; i<4; i++)count_err_B[i] = 0;
 			count_work = 0;

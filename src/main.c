@@ -101,8 +101,10 @@ void TIM4_IRQHandler(void){
 
 /*Функция контроллер*/
 void Control(){
-	Aver();
-	send_buffer(&aver_tmp_chan[0]);
+	//Aver();
+	TransInData();
+	//Aver();
+	BuffData(&aver_tmp_chan[0]);
 	SynchA(aver_tmp_chan);
 	SinQuadrant(&a1, &b1, buff_chanA1, buff_chanB1);
 	sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
@@ -178,6 +180,7 @@ void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 	if (c_out == 0){
 		if(flag_sinch_chan_A == 1){
 			tmpA--;
+			tmpA--;
 			if(buffA[tmpA] > ZIRO){
 				flag_mov_sin_A = 0;
 				c_out = 1;
@@ -218,8 +221,8 @@ void TrueRMS(){
 }
 
 
-int k = 0;                                  // счетчик измерений от ноля
-int k0 = 0;									// переменная для хранения пред идущего указателя буфера
+//int k = 0;                                  // счетчик измерений от ноля
+//int k0 = 0;									// переменная для хранения пред идущего указателя буфера
 
 
 short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
@@ -232,6 +235,8 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 
 
 void sin_compar_A(float  *vol){
+
+	static int k0;
 
 	if (k0 >= 20) {
 		k0 = 0;
@@ -256,7 +261,7 @@ void sin_compar_A(float  *vol){
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)SIN_A_ref[k0]);
 			k0++;
-			k = GetGTimer(GTIMER4);
+			//k = GetGTimer(GTIMER4);
 			if (k0 >= 20){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
