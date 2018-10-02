@@ -111,7 +111,7 @@ void Control(){
 	BuffData(&real_tmp_chan[0]);
 	Aver();
 	SynchA(aver_tmp_chan);
-	SinQuadrant(&a1, &b1, buff_chanA1, buff_chanB1);
+	SinQuadrant(a1, b1, buff_chanA1, buff_chanB1);
 	sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
 	//sin_compar_B(aver_tmp_chan);	//Вызываем функцию сравнения канала B
 
@@ -180,8 +180,9 @@ void SynchA (float *vol){
 int c_out = 0;
 
 void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
-	int tmpA = *x;
-	int tmpB = *y;
+	static int tmpA;
+	int tmpB = 0;
+	tmpA = x;
 	if (c_out == 0){
 		if(flag_sinch_chan_A == 1){
 			if((tmpA == 0) ||(tmpA == 1)) {
@@ -232,7 +233,7 @@ void TrueRMS(){
 
 
 //int k = 0;                                  // счетчик измерений от ноля
-int k0 = 0;									// переменная для хранения пред идущего указателя буфера
+//int k0 = 0;									// переменная для хранения пред идущего указателя буфера
 
 
 short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
@@ -247,6 +248,7 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 void sin_compar_A(float  *vol){
 
 	shift = shift20;
+	static int k0;
 
 	/*if (k0 >= 20) {
 		k0 = 0;
@@ -268,12 +270,13 @@ void sin_compar_A(float  *vol){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(7);
 			//send_buffer_flag(k0);
-			send_buffer_flag((int)vol[0]);
-			send_buffer_flag((int)SIN_A_ref[k0]);
+			//send_buffer_flag((int)vol[0]);
+			//send_buffer_flag((int)SIN_A_ref[k0]);
 			k0++;
-			if (k0 >= 42){
+			if (k0 >= 41){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
+				c_out = 0;
 				send_buffer_flag(8);
 				k0 = 0;
 			}
@@ -282,12 +285,13 @@ void sin_compar_A(float  *vol){
 			flag_channel_A[0] = 1;
 			send_buffer_flag(9);
 			//send_buffer_flag(k0);
-			send_buffer_flag((int)vol[0]);
-			send_buffer_flag((int)(SIN_A_ref[k0]*-1));
+			//send_buffer_flag((int)vol[0]);
+			//send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			k0++;
-			if (k0 >= 42){
+			if (k0 >= 41){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
+				c_out = 0;
 				send_buffer_flag(10);
 				k0 = 0;
 			}
@@ -318,12 +322,13 @@ void sin_compar_A(float  *vol){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(15);
 			//send_buffer_flag(k0);
-			send_buffer_flag((int)vol[0]);
-			send_buffer_flag((int)(SIN_A_ref[k0]*-1));
+			//send_buffer_flag((int)vol[0]);
+			//send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			k0++;
-			if (k0 >= 42){
+			if (k0 >= 41){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
+				c_out = 0;
 				send_buffer_flag(16);
 				k0 = 0;
 			}
@@ -331,13 +336,14 @@ void sin_compar_A(float  *vol){
 		else{
 			flag_channel_A[0] = 1;
 			k0++;
-			if (k0 >= 42){
+			if (k0 >= 41){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
+				c_out = 0;
 				send_buffer_flag(17);
 				//send_buffer_flag(k0);
-				send_buffer_flag((int)vol[0]);
-				send_buffer_flag((int)(SIN_A_ref[k0]*-1));
+				//send_buffer_flag((int)vol[0]);
+				//send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 				k0 = 0;
 			}
 		}
