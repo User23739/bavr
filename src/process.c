@@ -145,7 +145,7 @@ int count_err_B[4] = {0};			//[0]- общий на канал; [1]- BA; [2]-BB; [3]-BC;
 int count_work = 0;
 
 void channel_status(void){
-	if (flag_end_aver == 0){
+
 		count_work++;
 		if ((flag_channel_A[0]==0)&&(flag_channel_A[1]==0)&&(flag_channel_A[2]==0)){
 			flag_status_chann_A = 0;
@@ -173,7 +173,7 @@ void channel_status(void){
 			for (int i=0; i<4; i++)count_err_B[i] = 0;
 			count_work = 0;
 		}
-	}
+
 
 }
 

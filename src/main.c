@@ -43,8 +43,10 @@ short flag_mov_sin_B = 0;						    // 0 -идем вверх, 1 -идем вниз
 /*uint32_t SIN_A_ref_up[] = {1983,	2390, 2758,	3049, 3236,	3300, 3236,	3049, 2758,
 					  2390,	1983, 1577,	1209, 918, 731,	666, 731, 918, 1209, 1577 };            //Полный период Резерв на всякий случай     */
 
-float SIN_A_ref[] = {13, 66, 116, 164, 208, 247, 279, 305, 323, 333, 335,
-						329, 315, 293, 264, 228, 187, 141, 91, 40};			// идеал положительной полуволны синусоиды
+float SIN_A_ref[] = {0, 13, 40, 66, 91, 116, 141, 164, 187, 208, 228, 247,
+					 264, 279, 293, 305, 315, 323, 329, 333, 355, 335, 333,
+						329, 323, 315, 305, 293, 279, 264, 247, 228, 208,
+						187, 164, 141, 116, 91, 66, 40, 14};			// идеал положительной полуволны синусоиды
 
 float SIN_B_ref[] = {-297,5,	-318,5, -331,5, -336, -333, -321, -301,5, -274,5, -241,
 						-201,5, -157, -108,5, -57, -4,5, 49, 100, 149, 194, 234,5, 269,5};			// сдвиг по синусоиде В
@@ -54,12 +56,14 @@ float SIN_C_ref[] = {284,5, 253, 215, 172,5, 75, 22,5, -31, -83, -133, -179,5, -
 							-289, -312, -328, -335,5,  -335, -326, -309};						// сдвиг по синусоиде С
 
 
+
 //переменные допуска по синусоиде 10%, 15%, 20%
 
 float shift10 = 24;
 float shift15 = 36;
-float shift20 = 70;
+float shift20 = 48;
 
+float shift = 0;
 
 //-------------------------
 /*тестовый буфер флагов */
@@ -222,7 +226,7 @@ void TrueRMS(){
 
 
 //int k = 0;                                  // счетчик измерений от ноля
-//int k0 = 0;									// переменная для хранения пред идущего указателя буфера
+int k0 = 0;									// переменная для хранения пред идущего указателя буфера
 
 
 short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
@@ -236,9 +240,9 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 
 void sin_compar_A(float  *vol){
 
-	static int k0;
+	shift = shift20;
 
-	if (k0 >= 20) {
+	/*if (k0 >= 20) {
 		k0 = 0;
 		StopGTimer(GTIMER4);
 		flag_sinch_chan_A = 0;
@@ -254,18 +258,18 @@ void sin_compar_A(float  *vol){
 /*Сравнение синусоиды положительная полуволна*/
 	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
-		if((SIN_A_ref[k0]-shift20) < vol[0] && (SIN_A_ref[k0]+shift20) > vol[0]){
+		if((SIN_A_ref[k0]-shift) < vol[0] && (SIN_A_ref[k0]+shift) > vol[0]){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(7);
 			send_buffer_flag(k0);
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)SIN_A_ref[k0]);
 			k0++;
-			//k = GetGTimer(GTIMER4);
-			if (k0 >= 20){
+			if (k0 >= 42){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(8);
+				k0 = 0;
 			}
 		}
 		else{
@@ -275,10 +279,11 @@ void sin_compar_A(float  *vol){
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			k0++;
-			if (k0 >= 20){
+			if (k0 >= 42){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(10);
+				k0 = 0;
 			}
 		}
 		//---------------------------------------------AB------------------------------------------------------
@@ -303,29 +308,31 @@ void sin_compar_A(float  *vol){
 /*Сравнение синусоиды отрицательная полуволна*/
 	if ((flag_mov_sin_A == 1) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
-		if(((SIN_A_ref[k0]*-1)-shift20) < vol[0] && ((SIN_A_ref[k0]*-1)+shift20) > vol[0]){
+		if(((SIN_A_ref[k0]*-1)-shift) < vol[0] && ((SIN_A_ref[k0]*-1)+shift) > vol[0]){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(15);
 			send_buffer_flag(k0);
 			send_buffer_flag((int)vol[0]);
-			send_buffer_flag((int)SIN_A_ref[k0]);
+			send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			k0++;
-			if (k0 >= 20){
+			if (k0 >= 42){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(16);
+				k0 = 0;
 			}
 		}
 		else{
 			flag_channel_A[0] = 1;
 			k0++;
-			if (k0 >= 20){
+			if (k0 >= 42){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(17);
 				send_buffer_flag(k0);
 				send_buffer_flag((int)vol[0]);
 				send_buffer_flag((int)(SIN_A_ref[k0]*-1));
+				k0 = 0;
 			}
 		}
 		//-----------------------------------------------AB----------------------------------------------------
