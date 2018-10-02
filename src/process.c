@@ -63,8 +63,8 @@ float buff_chanC1[201] = {0};
 
 
 //указатель кольцевого буфера
-int a1, a2, a3 = 0;			//указатели буфера канала А
-int b1, b2, b3 = 0;			//указатели буфера канала B
+int a1 = 0;			//указатели буфера канала А
+int b1 = 0;			//указатели буфера канала B
 int c1 = 0;					//указатели буфера канала С
 
 void BuffData(float *vol){
@@ -76,22 +76,14 @@ void BuffData(float *vol){
 
 	if(a1 >= 200 ) a1 = 0;
 	buff_chanA1[a1] = vol[0];
+	buff_chanA2[a1] = vol[1];
+	buff_chanA3[a1] = vol[2];
 	a1++;
-	if(a2  >= 200 ) a2 = 0;
-	buff_chanA2[a2] = vol[1];
-	a2++;
-	if(a3  >= 200) a3 = 0;
-	buff_chanA3[a3] = vol[2];
-	a3++;
 	if(b1  >= 200) b1 = 0;
 	buff_chanB1[b1] = vol[3];
+	buff_chanB2[b1] = vol[4];
+	buff_chanB3[b1] = vol[5];
 	b1++;
-	if(b2  >= 200) b2 = 0;
-	buff_chanB2[b2] = vol[4];
-	b2++;
-	if(b3  >= 200) b3 = 0;
-	buff_chanB3[b3] = vol[5];
-	b3++;
 	if(c1  >= 200 ) c1 = 0;
 	buff_chanC1[c1] = vol[6];
 	c1++;
@@ -110,20 +102,25 @@ void BuffData(float *vol){
 //short int flag_end_aver = 0;   //0-можно мерить; 1- нельзя мерить
 void Aver(void){
 	int xa1 = a1;
-	int xa2 = a2;
-	int xa3 = a3;
+	int da1 = 0;
 	int xb1 = b1;
-	int xb2 = b2;
-	int xb3 = b3;
+	int db1 = 0;
 	int xc1 = c1;
+	int dc1 = 0;
 
-	aver_tmp_chan[0] = roundl((buff_chanA1[xa1]+buff_chanA1[xa1-1])/AVER_N);
-	aver_tmp_chan[1] = roundl((buff_chanA1[xa2]+buff_chanA1[xa2-1])/AVER_N);
-	aver_tmp_chan[2] = roundl((buff_chanA1[xa3]+buff_chanA1[xa3-1])/AVER_N);
-	aver_tmp_chan[3] = roundl((buff_chanA1[xb1]+buff_chanA1[xb1-1])/AVER_N);
-	aver_tmp_chan[4] = roundl((buff_chanA1[xb2]+buff_chanA1[xb2-1])/AVER_N);
-	aver_tmp_chan[5] = roundl((buff_chanA1[xb3]+buff_chanA1[xb3-1])/AVER_N);
-	aver_tmp_chan[6] = roundl((buff_chanA1[xc1]+buff_chanA1[xc1-1])/AVER_N);
+	if (xa1 == 0) da1 = 199;
+	da1 = xa1-1;
+	if (xb1 == 0) db1 = 199;
+	db1 = xb1-1;
+	if (xc1 == 0) dc1 = 199;
+	dc1 = xc1-1;
+	aver_tmp_chan[0] = roundl((buff_chanA1[xa1]+buff_chanA1[da1])/AVER_N);
+	aver_tmp_chan[1] = roundl((buff_chanA1[xa1]+buff_chanA1[da1])/AVER_N);
+	aver_tmp_chan[2] = roundl((buff_chanA1[xa1]+buff_chanA1[da1])/AVER_N);
+	aver_tmp_chan[3] = roundl((buff_chanA1[xb1]+buff_chanA1[db1])/AVER_N);
+	aver_tmp_chan[4] = roundl((buff_chanA1[xb1]+buff_chanA1[db1])/AVER_N);
+	aver_tmp_chan[5] = roundl((buff_chanA1[xb1]+buff_chanA1[db1])/AVER_N);
+	aver_tmp_chan[6] = roundl((buff_chanA1[xc1]+buff_chanA1[dc1])/AVER_N);
 
 
 	/*for (int i=0; i<7; i++){
@@ -145,7 +142,6 @@ int count_err_B[4] = {0};			//[0]- общий на канал; [1]- BA; [2]-BB; [3]-BC;
 int count_work = 0;
 
 void channel_status(void){
-
 		count_work++;
 		if ((flag_channel_A[0]==0)&&(flag_channel_A[1]==0)&&(flag_channel_A[2]==0)){
 			flag_status_chann_A = 0;

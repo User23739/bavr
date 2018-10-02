@@ -13,8 +13,9 @@ extern float buff_chanB1[201];
 extern float buff_chanB2[201];
 extern float buff_chanB3[201];
 extern float aver_tmp_chan[7];
-extern int a1, a2, a3;			//указатели буфера канала А
-extern int b1, b2, b3;
+extern int a1;			//указатели буфера канала А
+extern int b1;
+extern float real_tmp_chan[7];
 
 
 
@@ -105,10 +106,10 @@ void TIM4_IRQHandler(void){
 
 /*Функция контроллер*/
 void Control(){
-	//Aver();
+
 	TransInData();
-	//Aver();
-	BuffData(&aver_tmp_chan[0]);
+	BuffData(&real_tmp_chan[0]);
+	Aver();
 	SynchA(aver_tmp_chan);
 	SinQuadrant(&a1, &b1, buff_chanA1, buff_chanB1);
 	sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
@@ -261,7 +262,7 @@ void sin_compar_A(float  *vol){
 		if((SIN_A_ref[k0]-shift) < vol[0] && (SIN_A_ref[k0]+shift) > vol[0]){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(7);
-			send_buffer_flag(k0);
+			//send_buffer_flag(k0);
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)SIN_A_ref[k0]);
 			k0++;
@@ -275,7 +276,7 @@ void sin_compar_A(float  *vol){
 		else{
 			flag_channel_A[0] = 1;
 			send_buffer_flag(9);
-			send_buffer_flag(k0);
+			//send_buffer_flag(k0);
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			k0++;
@@ -311,7 +312,7 @@ void sin_compar_A(float  *vol){
 		if(((SIN_A_ref[k0]*-1)-shift) < vol[0] && ((SIN_A_ref[k0]*-1)+shift) > vol[0]){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(15);
-			send_buffer_flag(k0);
+			//send_buffer_flag(k0);
 			send_buffer_flag((int)vol[0]);
 			send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 			k0++;
@@ -329,7 +330,7 @@ void sin_compar_A(float  *vol){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
 				send_buffer_flag(17);
-				send_buffer_flag(k0);
+				//send_buffer_flag(k0);
 				send_buffer_flag((int)vol[0]);
 				send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 				k0 = 0;
