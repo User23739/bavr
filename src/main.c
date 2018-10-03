@@ -19,15 +19,7 @@ extern float real_tmp_chan[7];
 
 
 
-void USARTSend(const unsigned char *pucBuffer){
-	while (*pucBuffer)
-	{
-		USART_SendData(USART1, *pucBuffer++);
-		while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
-		{
-		}
-	}
-}
+
 
 short flag_aktiv_channel = 0;				// 1 - канал А; 0 - оба выключенны; 2 - канал В.
 short flag_status_chann_A = 0;				// состояние канала А;  0 - канал норм, 1 - канал не в норм.
@@ -37,6 +29,14 @@ short flag_switch_B = 0;		    		// 0 - вкл; 1 - откл
 
 short flag_mov_sin_A = 0;						    // 0 -идем вверх, 1 -идем вниз
 short flag_mov_sin_B = 0;						    // 0 -идем вверх, 1 -идем вниз
+
+short count_work_A_err = 0;  //счетчик ошибок синхронизации
+short err_flag_sinch_A = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
+short count_work_B_err = 0;  //счетчик ошибок синхронизации
+short err_flag_sinch_B = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
+short flag_sinch_chan_A = 0;					// 0-нет синхронизации; 1-есть синхронизация
+short flag_sinch_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
+
 
 
 //------Опорная синусоида в табличном виде
@@ -66,13 +66,29 @@ float shift20 = 48;
 
 float shift = 0;
 
+
+short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
+												//[1] - флаг состояния AB
+												//[2] - флаг состояния AC
+
+// предидущие значения
+int kb = 0;                                  // счетчик измерений от ноля
+int kb0 = 0;
+
+short int flag_channel_B[3]={0};				//[0] - флаг состояния BА   0 - хорошо; 1 - плохая;
+												//[1] - флаг состояния BB
+												//[2] - флаг состояния BC
+
+
+
+
 //-------------------------
 /*тестовый буфер флагов */
 // буфер кольцево для хранения данных измерения
 short buff_flag_[500] = {0};
 
 
-
+int c_out = 0;
 
 //указатель кольцевого буфера
 int a11 = 0;
@@ -107,37 +123,31 @@ void TIM4_IRQHandler(void){
 /*Функция контроллер*/
 void Control(){
 
-	TransInData();
-	BuffData(&real_tmp_chan[0]);
-	Aver();
-	SynchA(aver_tmp_chan);
-	SinQuadrant(a1, b1, buff_chanA1, buff_chanB1);
-	sin_compar_A(aver_tmp_chan);	//Вызываем функцию сравнения канала А
-	//sin_compar_B(aver_tmp_chan);	//Вызываем функцию сравнения канала B
+	TransInData();									//преобразование данных в удобный вид
+	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
+	Aver();											// усреднение - фильтрация
+	SynchA(aver_tmp_chan);							//синхронизация
+	SinQuadrant(a1, b1, buff_chanA1, buff_chanB1); 	//положение синусоиды
+	sin_compar_A(aver_tmp_chan);					//Вызываем функцию сравнения канала А
+	//sin_compar_B(aver_tmp_chan);					//Вызываем функцию сравнения канала B
 
 
 
 }
 
 
-
+void USARTSend(const unsigned char *pucBuffer){
+	while (*pucBuffer)
+	{
+		USART_SendData(USART1, *pucBuffer++);
+		while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
+		{
+		}
+	}
+}
 
 /*Функция синхронизации */
-
-
-
-
-
-
 //Инициализация функции синхронизации
-short count_work_A_err = 0;  //счетчик ошибок синхронизации
-short err_flag_sinch_A = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
-short count_work_B_err = 0;  //счетчик ошибок синхронизации
-short err_flag_sinch_B = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
-short flag_sinch_chan_A = 0;					// 0-нет синхронизации; 1-есть синхронизация
-short flag_sinch_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
-
-
 void InitSynchA(){
 	count_work_A_err = 0;
 	err_flag_sinch_A = 0;
@@ -176,9 +186,8 @@ void SynchA (float *vol){
 		}*/
 
 }
-/*Функция определения квадранта синуса*/
-int c_out = 0;
 
+/*Функция определения квадранта синуса*/
 void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 	static int tmpA;
 	int tmpB = 0;
@@ -218,8 +227,6 @@ void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 
 }
 
-
-
 /*Функция расчета частоты*/
 void Freq(){
 
@@ -236,9 +243,7 @@ void TrueRMS(){
 //int k0 = 0;									// переменная для хранения пред идущего указателя буфера
 
 
-short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
-												//[1] - флаг состояния AB
-												//[2] - флаг состояния AC
+
 
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
 /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
@@ -250,18 +255,6 @@ void sin_compar_A(float  *vol){
 	shift = shift20;
 	static int k0;
 
-	/*if (k0 >= 20) {
-		k0 = 0;
-		StopGTimer(GTIMER4);
-		flag_sinch_chan_A = 0;
-		c_out = 0;
-		send_buffer_flag(38);
-	}
-/*	if (k == 0){
-		k = sizeof(SIN_A_ref)/sizeof(float);
-		k0 = 0;
-	}
-*/
 
 /*Сравнение синусоиды положительная полуволна*/
 	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
@@ -370,14 +363,6 @@ void sin_compar_A(float  *vol){
 
 }
 //функция сравнения синусоиды канала B
-
-// предидущие значения
-int kb = 0;                                  // счетчик измерений от ноля
-int kb0 = 0;
-
-short int flag_channel_B[3]={0};				//[0] - флаг состояния BА   0 - хорошо; 1 - плохая;
-												//[1] - флаг состояния BB
-												//[2] - флаг состояния BC
 
 
 
