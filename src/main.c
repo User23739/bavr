@@ -74,6 +74,7 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 // предидущие значения
 int kb = 0;                                  // счетчик измерений от ноля
 int kb0 = 0;
+int count_period = 0;						//четчик периода
 
 short int flag_channel_B[3]={0};				//[0] - флаг состояния BА   0 - хорошо; 1 - плохая;
 												//[1] - флаг состояния BB
@@ -162,7 +163,9 @@ void SynchA (float *vol){
 		if ((REF_MIN < vol[0]) && (vol[0] < REF_MAX)){
 			flag_sinch_chan_A = 1;
 			send_buffer_flag(1);
+			count_period = 0;
 			err_flag_sinch_A = 0;
+			count_work_A_err = 0;
 			StartGTimer(GTIMER4);
 		}
 		else{
@@ -192,38 +195,38 @@ void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 	static int tmpA;
 	int tmpB = 0;
 	tmpA = x;
-	if (c_out == 0){
-		if(flag_sinch_chan_A == 1){
-			if((tmpA == 0) ||(tmpA == 1)) {
-				tmpA = 198;
-			}
-			else{
-				tmpA--;
-				tmpA--;
-			}
-			if(buffA[tmpA] > ZIRO){
-				flag_mov_sin_A = 0;
-				c_out = 1;
-				send_buffer_flag(3);
-			}
-			else{
-				flag_mov_sin_A = 1;
-				c_out = 1;
-				send_buffer_flag(4);
-			}
+
+	if((flag_sinch_chan_A == 1) && (count_period == 0)){
+		if((tmpA == 0) ||(tmpA == 1)) {
+			tmpA = 198;
 		}
-		/*if(flag_sinch_chan_B == 1){
-			tmpB--;
-			if(buffB[tmpB] > ZIRO){
-				flag_mov_sin_B = 0;
-				send_buffer_flag(5);
-			}
-			else{
-				flag_mov_sin_B = 1;
-				send_buffer_flag(6);
-			}
-		}*/
+		else{
+			tmpA--;
+			tmpA--;
+		}
+		if(buffA[tmpA] > ZIRO){
+			flag_mov_sin_A = 0;
+			//c_out = 1;
+			send_buffer_flag(3);
+		}
+		else{
+			flag_mov_sin_A = 1;
+			//c_out = 1;
+			send_buffer_flag(4);
+		}
 	}
+	/*if(flag_sinch_chan_B == 1){
+		tmpB--;
+		if(buffB[tmpB] > ZIRO){
+			flag_mov_sin_B = 0;
+			send_buffer_flag(5);
+		}
+		else{
+			flag_mov_sin_B = 1;
+			send_buffer_flag(6);
+		}
+	}*/
+
 
 }
 
@@ -254,7 +257,7 @@ void sin_compar_A(float  *vol){
 
 	shift = shift20;
 	static int k0;
-
+	k0 = count_period;
 
 /*Сравнение синусоиды положительная полуволна*/
 	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
@@ -265,7 +268,7 @@ void sin_compar_A(float  *vol){
 			//send_buffer_flag(k0);
 			//send_buffer_flag((int)vol[0]);
 			//send_buffer_flag((int)SIN_A_ref[k0]);
-			k0++;
+			count_period++;
 			if (k0 >= 41){
 				StopGTimer(GTIMER4);
 				flag_sinch_chan_A = 0;
