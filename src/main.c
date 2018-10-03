@@ -27,8 +27,8 @@ short flag_status_chann_B = 0;				// состояние канала B;  0 - канал норм, 1 - ка
 short flag_switch_A = 0;		    		// 0 - вкл; 1 - откл
 short flag_switch_B = 0;		    		// 0 - вкл; 1 - откл
 
-short flag_mov_sin_A = 0;						    // 0 -идем вверх, 1 -идем вниз
-short flag_mov_sin_B = 0;						    // 0 -идем вверх, 1 -идем вниз
+short flag_mov_sin_A = 0;						    // 0 -положительная полуволна, 1 -отрицательная полуволна
+short flag_mov_sin_B = 0;						    // 0 -положительная полуволна, 1 -отрицательная полуволна
 
 short count_work_A_err = 0;  //счетчик ошибок синхронизации
 short err_flag_sinch_A = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
@@ -36,7 +36,10 @@ short count_work_B_err = 0;  //счетчик ошибок синхронизации
 short err_flag_sinch_B = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
 short flag_sinch_chan_A = 0;					// 0-нет синхронизации; 1-есть синхронизация
 short flag_sinch_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
-
+short flag_ziro_chan_A = 0;					// 0-"0"не найден; 1-"0" найден
+short flag_ziro_chan_B = 0;					// 0-"0"не найден; 1-"0" найден
+short flag_compar_A = 0;					// "0"- не разрешается работа  "1"-положительная полуволна "2"- отрицательная полуволна
+short flag_compar_B = 0;					//  "0"- не разрешается работа  "1"-положительная полуволна "2"- отрицательная полуволна
 
 
 //------Опорная синусоида в табличном виде
@@ -74,7 +77,7 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 // предидущие значения
 int kb = 0;                                  // счетчик измерений от ноля
 int kb0 = 0;
-int count_period = 0;						//четчик периода
+int count_point = 0;						//счетчик отчетов
 
 short int flag_channel_B[3]={0};				//[0] - флаг состояния BА   0 - хорошо; 1 - плохая;
 												//[1] - флаг состояния BB
@@ -127,9 +130,10 @@ void Control(){
 	TransInData();									//преобразование данных в удобный вид
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
 	Aver();											// усреднение - фильтрация
-	SynchA(aver_tmp_chan);							//синхронизация
-	SinQuadrant(a1, b1, buff_chanA1, buff_chanB1); 	//положение синусоиды
-	sin_compar_A(aver_tmp_chan);					//Вызываем функцию сравнения канала А
+	SinQuadrant(a1, b1, buff_chanA1, buff_chanB1);	//положение синусоиды
+	ZiroDetect(aver_tmp_chan, shift20); 			//детектирование 0
+	SynchA();										//синхронизация
+	sin_compar_A(aver_tmp_chan, shift20);			//Вызываем функцию сравнения канала А
 	//sin_compar_B(aver_tmp_chan);					//Вызываем функцию сравнения канала B
 
 
@@ -157,9 +161,38 @@ void InitSynchA(){
 
 }
 //Процесс функции инициализации
-void SynchA (float *vol){
+void SynchA (void){
+	static int count_wave;		//счетчик волн
+	switch(flag_mov_sin_A){
+		case 0:
 
-	if (flag_sinch_chan_A == 0){
+			break;
+		case 1:
+
+			break;
+		default:
+			break;
+	}
+	switch(flag_ziro_chan_A){
+			case 0:
+
+				break;
+			case 1:
+
+				break;
+			default:
+				break;
+		}
+
+
+
+
+
+
+
+
+
+	/*if (flag_sinch_chan_A == 0){
 		if ((REF_MIN < vol[0]) && (vol[0] < REF_MAX)){
 			flag_sinch_chan_A = 1;
 			send_buffer_flag(1);
@@ -193,10 +226,27 @@ void SynchA (float *vol){
 /*Функция определения квадранта синуса*/
 void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 	static int tmpA;
-	int tmpB = 0;
+	static int tmpB;
 	tmpA = x;
+	tmpB = y;
+	if (buffA[tmpA] >= SIN_A_ref[0]){
+		flag_mov_sin_A = 0;
+	}
+	else{
+		flag_mov_sin_A = 1;
+	}
+	if (buffB[tmpB] >= SIN_B_ref[0]){
+		flag_mov_sin_B = 0;
+	}
+	else{
+		flag_mov_sin_B = 1;
+	}
 
-	if((flag_sinch_chan_A == 1) && (count_period == 0)){
+
+
+
+
+	/*if((flag_sinch_chan_A == 1) && (count_period == 0)){
 		if((tmpA == 0) ||(tmpA == 1)) {
 			tmpA = 198;
 		}
@@ -229,6 +279,22 @@ void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 
 
 }
+/*Функция детектирования 0*/
+void ZiroDetect(float *vol, float shift){
+
+	if(((SIN_A_ref[0]-shift) < vol[0]) && ((SIN_A_ref[0]+shift) > vol[0])){
+		flag_ziro_chan_A = 1;
+	}
+	else{
+		flag_ziro_chan_A = 0;
+	}
+	if(((SIN_B_ref[0]-shift) < vol[3]) && ((SIN_B_ref[0]+shift) > vol[3])){
+		flag_ziro_chan_B = 1;
+	}
+	else{
+		flag_ziro_chan_B = 0;
+	}
+}
 
 /*Функция расчета частоты*/
 void Freq(){
@@ -253,16 +319,50 @@ void TrueRMS(){
 
 
 
-void sin_compar_A(float  *vol){
+void sin_compar_A(float  *vol, float *shift, int k){
 
-	shift = shift20;
-	static int k0;
-	k0 = count_period;
 
+	switch(flag_compar_A){
+	case 1:
+		if(((SIN_A_ref[k]-shift) < vol[0]) && ((SIN_A_ref[k]+shift) > vol[0])){
+			flag_channel_A[0] = 0;
+			send_buffer_flag(7);
+			//send_buffer_flag(k0);
+			//send_buffer_flag((int)vol[0]);
+			//send_buffer_flag((int)SIN_A_ref[k0]);
+		}
+		else{
+			flag_channel_A[0] = 1;
+			send_buffer_flag(9);
+			//send_buffer_flag(k0);
+			//send_buffer_flag((int)vol[0]);
+			//send_buffer_flag((int)(SIN_A_ref[k0]*-1));
+		}
+		break;
+	case 2:
+		if((((SIN_A_ref[k]*-1)-shift) < vol[0]) && (((SIN_A_ref[k]*-1)+shift) > vol[0])){
+			flag_channel_A[0] = 0;
+			send_buffer_flag(15);
+			//send_buffer_flag(k0);
+			//send_buffer_flag((int)vol[0]);
+			//send_buffer_flag((int)(SIN_A_ref[k0]*-1));
+							}
+		else{
+			flag_channel_A[0] = 1;
+			}
+		break;
+	default:
+		break;
+	}
+
+
+
+
+/*	}*/
 /*Сравнение синусоиды положительная полуволна*/
-	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
+/*	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
-		if((SIN_A_ref[k0]-shift) < vol[0] && (SIN_A_ref[k0]+shift) > vol[0]){
+		if(((SIN_A_ref[k0]-shift) < vol[0]) && ((SIN_A_ref[k0]+shift) > vol[0])){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(7);
 			//send_buffer_flag(k0);
@@ -310,11 +410,11 @@ void sin_compar_A(float  *vol){
 			flag_channel_A[2] = 1;
 			send_buffer_flag(14);
 		}*/
-	}
+	/*}
 /*Сравнение синусоиды отрицательная полуволна*/
-	if ((flag_mov_sin_A == 1) && (flag_sinch_chan_A == 1)){
+/*	if ((flag_mov_sin_A == 1) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
-		if(((SIN_A_ref[k0]*-1)-shift) < vol[0] && ((SIN_A_ref[k0]*-1)+shift) > vol[0]){
+		if((((SIN_A_ref[k0]*-1)-shift) < vol[0]) && (((SIN_A_ref[k0]*-1)+shift) > vol[0])){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(15);
 			//send_buffer_flag(k0);
@@ -361,7 +461,7 @@ void sin_compar_A(float  *vol){
 			flag_channel_A[2] = 1;
 			send_buffer_flag(21);
 		}*/
-	}
+/*	}*/
 
 
 }
