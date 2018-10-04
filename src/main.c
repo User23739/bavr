@@ -3,6 +3,8 @@
 
 #include "main.h"
 
+#define SHIFT_ZERO 5
+
 //-------переменныеи и функции для тестов------------------------------------
 volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
 extern float buff_chanA1[201];
@@ -129,9 +131,9 @@ void Control(){
 
 	TransInData();									//преобразование данных в удобный вид
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
-	Aver();											// усреднение - фильтрация
-	SinQuadrant(aver_tmp_chan);	//положение синусоиды
-	ZeroDetect(aver_tmp_chan, shift20); 			//детектирование 0
+	//Aver();											// усреднение - фильтрация
+	SinQuadrant(&real_tmp_chan[0]);	//положение синусоиды
+	//ZeroDetect(&real_tmp_chan[0], shift20); 			//детектирование 0
 	//SynchA();										//синхронизация
 	//sin_compar_A(aver_tmp_chan, shift20);			//Вызываем функцию сравнения канала А
 	//sin_compar_B(aver_tmp_chan);					//Вызываем функцию сравнения канала B
@@ -223,13 +225,13 @@ void SinQuadrant(float *vol){
 	//static int tmpB;
 	//tmpA = x;
 	//tmpB = y;
-	if (SIN_A_ref[0] < vol[0]){
+	if ((SIN_A_ref[0]-SHIFT_ZERO < vol[0]) && (vol[0] < SIN_A_ref[0]+SHIFT_ZERO)){
 		flag_mov_sin_A = 0;
-		//send_buffer_flag(1);
+		send_buffer_flag(1);
 	}
 	else{
 		flag_mov_sin_A = 1;
-		//send_buffer_flag(2);
+		send_buffer_flag(2);
 	}
 	/*if (buffB[tmpB] >= SIN_B_ref[0]){
 		flag_mov_sin_B = 0;
