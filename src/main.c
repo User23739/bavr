@@ -130,9 +130,9 @@ void Control(){
 	TransInData();									//преобразование данных в удобный вид
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
 	Aver();											// усреднение - фильтрация
-	SinQuadrant(a1, b1, buff_chanA1, buff_chanB1);	//положение синусоиды
+	SinQuadrant(aver_tmp_chan);	//положение синусоиды
 	ZeroDetect(aver_tmp_chan, shift20); 			//детектирование 0
-	SynchA();										//синхронизация
+	//SynchA();										//синхронизация
 	//sin_compar_A(aver_tmp_chan, shift20);			//Вызываем функцию сравнения канала А
 	//sin_compar_B(aver_tmp_chan);					//Вызываем функцию сравнения канала B
 
@@ -169,16 +169,20 @@ void SynchA (void){
 
 	if (flag_zero_chan_A){
 		if (!zero_first_detect){
-			count_half_wave = 0;
-			count_point = 0;
-			zero_first_detect = 1;
-			StartGTimer(GTIMER4);
-		}
+				count_half_wave = 0;
+				count_point = 0;
+				zero_first_detect = 1;
+				StartGTimer(GTIMER4);
+			}
 		send_buffer_flag(1);
 		send_buffer_flag(GetGTimer(GTIMER4));
+		}
+	else{
+		send_buffer_flag(2);
+		send_buffer_flag(GetGTimer(GTIMER4));
+		}
 
 
-	}
 
 
 
@@ -214,23 +218,25 @@ void SynchA (void){
 }
 
 /*Функция определения квадранта синуса*/
-void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
-	static int tmpA;
-	static int tmpB;
-	tmpA = x;
-	tmpB = y;
-	if (buffA[tmpA] >= SIN_A_ref[0]){
+void SinQuadrant(float *vol){
+	//static int tmpA;
+	//static int tmpB;
+	//tmpA = x;
+	//tmpB = y;
+	if (SIN_A_ref[0] < vol[0]){
 		flag_mov_sin_A = 0;
+		//send_buffer_flag(1);
 	}
 	else{
 		flag_mov_sin_A = 1;
+		//send_buffer_flag(2);
 	}
-	if (buffB[tmpB] >= SIN_B_ref[0]){
+	/*if (buffB[tmpB] >= SIN_B_ref[0]){
 		flag_mov_sin_B = 0;
 	}
 	else{
 		flag_mov_sin_B = 1;
-	}
+	}*/
 
 
 
@@ -274,9 +280,11 @@ void ZeroDetect(float *vol, float shift){
 
 	if(((SIN_A_ref[0]-shift) < vol[0]) && ((SIN_A_ref[0]+shift) > vol[0])){
 		flag_zero_chan_A = 1;
+		send_buffer_flag(1);
 	}
 	else{
 		flag_zero_chan_A = 0;
+		send_buffer_flag(2);
 	}
 	if(((SIN_B_ref[0]-shift) < vol[3]) && ((SIN_B_ref[0]+shift) > vol[3])){
 		flag_zero_chan_B = 1;

@@ -115,12 +115,12 @@ void Aver(void){
 	if (xc1 == 0) dc1 = 199;
 	dc1 = xc1-1;
 	aver_tmp_chan[0] = roundl((buff_chanA1[xa1]+buff_chanA1[da1])/AVER_N);
-	aver_tmp_chan[1] = roundl((buff_chanA1[xa1]+buff_chanA1[da1])/AVER_N);
-	aver_tmp_chan[2] = roundl((buff_chanA1[xa1]+buff_chanA1[da1])/AVER_N);
-	aver_tmp_chan[3] = roundl((buff_chanA1[xb1]+buff_chanA1[db1])/AVER_N);
-	aver_tmp_chan[4] = roundl((buff_chanA1[xb1]+buff_chanA1[db1])/AVER_N);
-	aver_tmp_chan[5] = roundl((buff_chanA1[xb1]+buff_chanA1[db1])/AVER_N);
-	aver_tmp_chan[6] = roundl((buff_chanA1[xc1]+buff_chanA1[dc1])/AVER_N);
+	aver_tmp_chan[1] = roundl((buff_chanA2[xa1]+buff_chanA2[da1])/AVER_N);
+	aver_tmp_chan[2] = roundl((buff_chanA3[xa1]+buff_chanA3[da1])/AVER_N);
+	aver_tmp_chan[3] = roundl((buff_chanB1[xb1]+buff_chanB1[db1])/AVER_N);
+	aver_tmp_chan[4] = roundl((buff_chanB2[xb1]+buff_chanB2[db1])/AVER_N);
+	aver_tmp_chan[5] = roundl((buff_chanB3[xb1]+buff_chanB3[db1])/AVER_N);
+	aver_tmp_chan[6] = roundl((buff_chanC1[xc1]+buff_chanC1[dc1])/AVER_N);
 
 
 	/*for (int i=0; i<7; i++){

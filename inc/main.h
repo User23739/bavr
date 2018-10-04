@@ -62,6 +62,6 @@ void InitSynchA(void);
 void SynchA (void);
 void ZeroDetect(float *vol, float shift);
 
-void SinQuadrant(int *x, int *y, float *buffA, float *buffB);
+void SinQuadrant(float *vol);
 
 #endif /* MAIN_H_ */

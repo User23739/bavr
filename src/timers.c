@@ -6,14 +6,14 @@
  */
 #include "main.h"
 
-unsigned int GTimers[MAX_GTIMERS];
+unsigned int GTimers[MAX_GTIMERS];		//Массив храняхихся значений таймеров
 
 
 //Состояния таймера
 #define TIMER_STOPPED 0  //Таймер остановлен
 #define TIMER_RUNNING 1  //Таймер работает
 
-char GTStates[MAX_GTIMERS]; // Массив хранящий текущие значения таймеров
+char GTStates[MAX_GTIMERS]; // Массив состояний таймеров
 
 void InitGTimers(void){		//Инициализация глобальных таймеров
 	char i;
@@ -24,7 +24,7 @@ void InitGTimers(void){		//Инициализация глобальных таймеров
 void StartGTimer(unsigned int GTimerID){   //Запуск таймера
 	if (GTStates[GTimerID] == TIMER_STOPPED){
 		GTimers[GTimerID] = 0;
-		GTimers[GTimerID] = TIMER_RUNNING;
+		GTStates[GTimerID] = TIMER_RUNNING;
 	}
 }
 
