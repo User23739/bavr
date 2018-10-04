@@ -225,7 +225,7 @@ void SinQuadrant(float *vol){
 	//static int tmpB;
 	//tmpA = x;
 	//tmpB = y;
-	if ((SIN_A_ref[0]-SHIFT_ZERO < vol[0]) && (vol[0] < SIN_A_ref[0]+SHIFT_ZERO)){
+	if (SIN_A_ref[0] < vol[0]){
 		flag_mov_sin_A = 0;
 		send_buffer_flag(1);
 	}
