@@ -60,7 +60,7 @@ void sin_compar_B(float *vol);
 
 void InitSynchA(void);
 void SynchA (void);
-void ZiroDetect(float *vol);
+void ZeroDetect(float *vol, float shift);
 
 void SinQuadrant(int *x, int *y, float *buffA, float *buffB);
 

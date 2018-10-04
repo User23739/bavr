@@ -36,8 +36,8 @@ short count_work_B_err = 0;  //счетчик ошибок синхронизации
 short err_flag_sinch_B = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
 short flag_sinch_chan_A = 0;					// 0-нет синхронизации; 1-есть синхронизация
 short flag_sinch_chan_B = 0;					// 0-нет синхронизации; 1-есть синхронизация
-short flag_ziro_chan_A = 0;					// 0-"0"не найден; 1-"0" найден
-short flag_ziro_chan_B = 0;					// 0-"0"не найден; 1-"0" найден
+short flag_zero_chan_A = 0;					// 0-"0"не найден; 1-"0" найден
+short flag_zero_chan_B = 0;					// 0-"0"не найден; 1-"0" найден
 short flag_compar_A = 0;					// "0"- не разрешается работа  "1"-положительная полуволна "2"- отрицательная полуволна
 short flag_compar_B = 0;					//  "0"- не разрешается работа  "1"-положительная полуволна "2"- отрицательная полуволна
 
@@ -131,9 +131,9 @@ void Control(){
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
 	Aver();											// усреднение - фильтрация
 	SinQuadrant(a1, b1, buff_chanA1, buff_chanB1);	//положение синусоиды
-	ZiroDetect(aver_tmp_chan, shift20); 			//детектирование 0
+	ZeroDetect(aver_tmp_chan, shift20); 			//детектирование 0
 	SynchA();										//синхронизация
-	sin_compar_A(aver_tmp_chan, shift20);			//Вызываем функцию сравнения канала А
+	//sin_compar_A(aver_tmp_chan, shift20);			//Вызываем функцию сравнения канала А
 	//sin_compar_B(aver_tmp_chan);					//Вызываем функцию сравнения канала B
 
 
@@ -151,6 +151,8 @@ void USARTSend(const unsigned char *pucBuffer){
 	}
 }
 
+
+
 /*Функция синхронизации */
 //Инициализация функции синхронизации
 void InitSynchA(){
@@ -162,33 +164,21 @@ void InitSynchA(){
 }
 //Процесс функции инициализации
 void SynchA (void){
-	static int count_wave;		//счетчик волн
-	switch(flag_mov_sin_A){
-		case 0:
+	static int count_half_wave;		//счетчик полуволн
+	static short zero_first_detect;	//первое детектирование "0"
 
-			break;
-		case 1:
-
-			break;
-		default:
-			break;
-	}
-	switch(flag_ziro_chan_A){
-			case 0:
-
-				break;
-			case 1:
-
-				break;
-			default:
-				break;
+	if (flag_zero_chan_A){
+		if (!zero_first_detect){
+			count_half_wave = 0;
+			count_point = 0;
+			zero_first_detect = 1;
+			StartGTimer(GTIMER4);
 		}
+		send_buffer_flag(1);
+		send_buffer_flag(GetGTimer(GTIMER4));
 
 
-
-
-
-
+	}
 
 
 
@@ -254,7 +244,7 @@ void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 			tmpA--;
 			tmpA--;
 		}
-		if(buffA[tmpA] > ZIRO){
+		if(buffA[tmpA] > zero){
 			flag_mov_sin_A = 0;
 			//c_out = 1;
 			send_buffer_flag(3);
@@ -267,7 +257,7 @@ void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 	}
 	/*if(flag_sinch_chan_B == 1){
 		tmpB--;
-		if(buffB[tmpB] > ZIRO){
+		if(buffB[tmpB] > zero){
 			flag_mov_sin_B = 0;
 			send_buffer_flag(5);
 		}
@@ -280,19 +270,19 @@ void SinQuadrant(int *x, int *y, float *buffA, float *buffB){
 
 }
 /*Функция детектирования 0*/
-void ZiroDetect(float *vol, float shift){
+void ZeroDetect(float *vol, float shift){
 
 	if(((SIN_A_ref[0]-shift) < vol[0]) && ((SIN_A_ref[0]+shift) > vol[0])){
-		flag_ziro_chan_A = 1;
+		flag_zero_chan_A = 1;
 	}
 	else{
-		flag_ziro_chan_A = 0;
+		flag_zero_chan_A = 0;
 	}
 	if(((SIN_B_ref[0]-shift) < vol[3]) && ((SIN_B_ref[0]+shift) > vol[3])){
-		flag_ziro_chan_B = 1;
+		flag_zero_chan_B = 1;
 	}
 	else{
-		flag_ziro_chan_B = 0;
+		flag_zero_chan_B = 0;
 	}
 }
 
@@ -319,7 +309,7 @@ void TrueRMS(){
 
 
 
-void sin_compar_A(float  *vol, float *shift, int k){
+/*void sin_compar_A(float  *vol, float *shift, int k){
 
 
 	switch(flag_compar_A){
@@ -464,7 +454,7 @@ void sin_compar_A(float  *vol, float *shift, int k){
 /*	}*/
 
 
-}
+/*}*/
 //функция сравнения синусоиды канала B
 
 
