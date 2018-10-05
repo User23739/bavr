@@ -47,7 +47,7 @@ short flag_compar_B = 0;					//  "0"- не разрешается работа  "1"-положительная п
 //------Опорная синусоида в табличном виде
 //Синхронизация осуществляется по синусоиде А
 
-float SIN_A_ref[] = {0, 13, 40, 66, 91, 116, 141, 164, 187, 208, 228, 247,
+float SIN_A_ref[] = {13, 40, 66, 91, 116, 141, 164, 187, 208, 228, 247,
 					 264, 279, 293, 305, 315, 323, 329, 333, 355, 335, 333,
 						329, 323, 315, 305, 293, 279, 264, 247, 228, 208,
 						187, 164, 141, 116, 91, 66, 40, 14};									// идеал положительной полуволны синусоиды
@@ -77,7 +77,7 @@ short int flag_channel_A[3]={0};				//[0] - флаг состояния АА  0 - хорошо; 1 - п
 // предидущие значения
 int kb = 0;                                  // счетчик измерений от ноля
 int kb0 = 0;
-int count_point = 0;						//счетчик отчетов
+int  count_point = 0;						//счетчик отчетов
 
 short int flag_channel_B[3]={0};				//[0] - флаг состояния BА   0 - хорошо; 1 - плохая;
 												//[1] - флаг состояния BB
@@ -134,7 +134,8 @@ void Control(){
 
 	ZeroDetect(&real_tmp_chan[0]); 			//детектирование 0
 	//SynchA();										//синхронизация
-	//sin_compar_A(aver_tmp_chan, shift20);			//Вызываем функцию сравнения канала А
+
+	sin_compar_A(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
 	//sin_compar_B(aver_tmp_chan);					//Вызываем функцию сравнения канала B
 
 
@@ -220,10 +221,10 @@ void SynchA (void){
 
 /*Функция определения квадранта синуса*/
 void SinQuadrant(float *vol){
-	//static int tmpA;
-	//static int tmpB;
-	//tmpA = x;
-	//tmpB = y;
+	static int after;
+	static int before;
+	before = after;
+	after = vol[0];
 	if (SIN_A_ref[0] < vol[0]){
 		flag_mov_sin_A = 0;
 		send_buffer_flag(1);
@@ -281,23 +282,41 @@ void SinQuadrant(float *vol){
 /*Функция детектирования 0*/
 
 void ZeroDetect(float *vol){
+		static int after;
+		static int before;
+		before = after;
+		after = vol[0];
 
 	if(((SIN_A_ref[0]- SHIFT_ZERO ) < vol[0]) && ((SIN_A_ref[0]+ SHIFT_ZERO ) > vol[0])){
 		flag_zero_chan_A = 1;
+		count_point = 0;
 		GPIO_SetBits(LED2_PORT, LED2);   	//бит установил
 		send_buffer_flag(1);
 		GPIO_ResetBits(LED2_PORT, LED2);    //бит снял
+		if ((after > 0) && (before > 0)){
+			flag_mov_sin_A = 1;
+		}
+		else if ((after < 0) && (before > 0)){
+			flag_mov_sin_A = 1;
+		}
+		else if ((after < 0) && (before < 0)){
+			flag_mov_sin_A = 0;
+		}
+		else if ((after > 0) && (before < 0)){
+			flag_mov_sin_A = 0;
+		}
 	}
 	else{
 		flag_zero_chan_A = 0;
+		count_point++;
 		send_buffer_flag(2);
 	}
-	if(((SIN_B_ref[0]- SHIFT_ZERO ) < vol[3]) && ((SIN_B_ref[0]+ SHIFT_ZERO ) > vol[3])){
+	/*if(((SIN_B_ref[0]- SHIFT_ZERO ) < vol[3]) && ((SIN_B_ref[0]+ SHIFT_ZERO ) > vol[3])){
 		flag_zero_chan_B = 1;
 	}
 	else{
 		flag_zero_chan_B = 0;
-	}
+	}*/
 }
 
 /*Функция расчета частоты*/
@@ -323,12 +342,15 @@ void TrueRMS(){
 
 
 
-/*void sin_compar_A(float  *vol, float *shift, int k){
 
 
-	switch(flag_compar_A){
-	case 1:
-		if(((SIN_A_ref[k]-shift) < vol[0]) && ((SIN_A_ref[k]+shift) > vol[0])){
+void sin_compar_A(float *vol, float shift){
+
+	static int k;
+	k = count_point;
+	switch(flag_mov_sin_A){
+	case 0:
+		if (((SIN_A_ref[k]-shift) < vol[0]) && ((SIN_A_ref[k]+shift) > vol[0])){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(7);
 			//send_buffer_flag(k0);
@@ -343,8 +365,8 @@ void TrueRMS(){
 			//send_buffer_flag((int)(SIN_A_ref[k0]*-1));
 		}
 		break;
-	case 2:
-		if((((SIN_A_ref[k]*-1)-shift) < vol[0]) && (((SIN_A_ref[k]*-1)+shift) > vol[0])){
+	case 1:
+		if ((((SIN_A_ref[k]*-1)-shift) < vol[0]) && (((SIN_A_ref[k]*-1)+shift) > vol[0])){
 			flag_channel_A[0] = 0;
 			send_buffer_flag(15);
 			//send_buffer_flag(k0);
@@ -362,7 +384,7 @@ void TrueRMS(){
 
 
 
-/*	}*/
+}
 /*Сравнение синусоиды положительная полуволна*/
 /*	if ((flag_mov_sin_A == 0) && (flag_sinch_chan_A == 1)){
 		//----------------------------------------------AA-----------------------------------------------------
