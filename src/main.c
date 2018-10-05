@@ -3,7 +3,7 @@
 
 #include "main.h"
 
-#define SHIFT_ZERO 5
+#define SHIFT_ZERO 15
 
 //-------переменныеи и функции для тестов------------------------------------
 volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
@@ -375,6 +375,7 @@ void sin_compar_A(float *vol, float shift){
 							}
 		else{
 			flag_channel_A[0] = 1;
+			send_buffer_flag(17);
 			}
 		break;
 	default:
