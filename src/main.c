@@ -89,7 +89,7 @@ short int flag_channel_B[3]={0};				//[0] - флаг состояния BА   0 - хорошо; 1 - 
 //-------------------------
 /*тестовый буфер флагов */
 // буфер кольцево для хранения данных измерения
-short buff_flag_[500] = {0};
+short buff_flag_[1000] = {0};
 
 
 int c_out = 0;
@@ -101,7 +101,7 @@ int a11 = 0;
 
 void send_buffer_flag(short *vol){
 
-	if(a11 >= 501 ) a11 = 0;
+	if(a11 >= 1001 ) a11 = 0;
 	buff_flag_[a11] = vol;
 	a11++;
 
@@ -130,8 +130,9 @@ void Control(){
 	TransInData();									//преобразование данных в удобный вид
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
 	//Aver();											// усреднение - фильтрация
-	SinQuadrant(&real_tmp_chan[0]);	//положение синусоиды
-	//ZeroDetect(&real_tmp_chan[0], shift20); 			//детектирование 0
+	//SinQuadrant(&real_tmp_chan[0]);	//положение синусоиды
+
+	ZeroDetect(&real_tmp_chan[0]); 			//детектирование 0
 	//SynchA();										//синхронизация
 	//sin_compar_A(aver_tmp_chan, shift20);			//Вызываем функцию сравнения канала А
 	//sin_compar_B(aver_tmp_chan);					//Вызываем функцию сравнения канала B
@@ -278,17 +279,20 @@ void SinQuadrant(float *vol){
 
 }
 /*Функция детектирования 0*/
-void ZeroDetect(float *vol, float shift){
 
-	if(((SIN_A_ref[0]-shift) < vol[0]) && ((SIN_A_ref[0]+shift) > vol[0])){
+void ZeroDetect(float *vol){
+
+	if(((SIN_A_ref[0]- SHIFT_ZERO ) < vol[0]) && ((SIN_A_ref[0]+ SHIFT_ZERO ) > vol[0])){
 		flag_zero_chan_A = 1;
+		GPIO_SetBits(LED2_PORT, LED2);   	//бит установил
 		send_buffer_flag(1);
+		GPIO_ResetBits(LED2_PORT, LED2);    //бит снял
 	}
 	else{
 		flag_zero_chan_A = 0;
 		send_buffer_flag(2);
 	}
-	if(((SIN_B_ref[0]-shift) < vol[3]) && ((SIN_B_ref[0]+shift) > vol[3])){
+	if(((SIN_B_ref[0]- SHIFT_ZERO ) < vol[3]) && ((SIN_B_ref[0]+ SHIFT_ZERO ) > vol[3])){
 		flag_zero_chan_B = 1;
 	}
 	else{

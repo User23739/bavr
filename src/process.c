@@ -49,7 +49,7 @@ void TransInData(void){
 
  // переменные  буфера
 // буфер кольцево для хранения данных измерения
-float buff_chanA1[201] = {0};
+float buff_chanA1[1001] = {0};
 float buff_chanA2[201] = {0};
 float buff_chanA3[201] = {0};
 
@@ -74,7 +74,7 @@ void BuffData(float *vol){
 	//static int c1;					//указатели буфера канала С
 
 
-	if(a1 >= 200 ) a1 = 0;
+	if(a1 >= 1000 ) a1 = 0;
 	buff_chanA1[a1] = vol[0];
 	buff_chanA2[a1] = vol[1];
 	buff_chanA3[a1] = vol[2];

@@ -30,6 +30,10 @@ void InitGPIO(void){
 	GPIO_InitStructure.GPIO_Speed =		GPIO_Speed_50MHz;
 	GPIO_Init(LED1_PORT, &GPIO_InitStructure);
 
+	GPIO_InitStructure.GPIO_Pin = 		LED2;
+	GPIO_InitStructure.GPIO_Mode = 		GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_Speed =		GPIO_Speed_50MHz;
+	GPIO_Init(LED2_PORT, &GPIO_InitStructure);
 
 }
 

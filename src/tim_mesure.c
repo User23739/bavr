@@ -35,7 +35,7 @@ void TIMER_Init_4(void)
 	    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
 	    TIM_TimeBaseStructure.TIM_Prescaler= 49;
 	    TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up;
-	    TIM_TimeBaseStructure.TIM_Period = 250;//до этого значени€ будет считать таймер 250 uS/ 250 мк—
+	    TIM_TimeBaseStructure.TIM_Period = 100;//до этого значени€ будет считать таймер 250 uS/ 250 мк—
 	    TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
 
 	    TIM_ClearFlag(TIM4, TIM_FLAG_Update);
