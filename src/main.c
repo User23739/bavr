@@ -29,7 +29,7 @@ short flag_status_chann_B = 0;				// состояние канала B;  0 - канал норм, 1 - ка
 short flag_switch_A = 0;		    		// 0 - вкл; 1 - откл
 short flag_switch_B = 0;		    		// 0 - вкл; 1 - откл
 
-short flag_mov_sin_A = 0;						    // 0 -положительная полуволна, 1 -отрицательная полуволна
+short flag_mov_sin[7] = {0};						    // 0 -положительная полуволна, 1 -отрицательная полуволна
 short flag_mov_sin_B = 0;						    // 0 -положительная полуволна, 1 -отрицательная полуволна
 
 short count_work_A_err = 0;  //счетчик ошибок синхронизации
@@ -166,7 +166,7 @@ void Control(){
 	ZeroDetect(&real_tmp_chan[0]); 			//детектирование 0
 	//SynchA();										//синхронизация
 
-	sin_compar_A(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
+	//sin_compar_A(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
 	//sin_compar_B(aver_tmp_chan);					//Вызываем функцию сравнения канала B
 
 
@@ -196,7 +196,7 @@ void InitSynchA(){
 
 }
 //Процесс функции инициализации
-void SynchA (void){
+/*void SynchA (void){
 	static int count_half_wave;		//счетчик полуволн
 	static short zero_first_detect;	//первое детектирование "0"
 
@@ -248,10 +248,10 @@ void SynchA (void){
 			}
 		}*/
 
-}
+/*}*/
 
 /*Функция определения квадранта синуса*/
-void SinQuadrant(float *vol){
+/*void SinQuadrant(float *vol){
 	static int after;
 	static int before;
 	before = after;
@@ -272,7 +272,6 @@ void SinQuadrant(float *vol){
 	else{
 		flag_mov_sin_B = 1;
 	}*/
-
 
 
 
@@ -309,14 +308,14 @@ void SinQuadrant(float *vol){
 	}*/
 
 
-}
+/*}*/
 /*Функция детектирования 0*/
 
 void ZeroDetect(float *vol){
 		static float after[7];
 		static float before[7];
 
-		for (int i = 0; i<7; i++){
+		for (int i = 0; i<3; i++){
 			before[i] = after[i];
 			after[i] = vol[i];
 
@@ -326,17 +325,17 @@ void ZeroDetect(float *vol){
 			GPIO_SetBits(LED2_PORT, LED2);   	//бит установил
 			send_buffer_flag(1);
 			GPIO_ResetBits(LED2_PORT, LED2);    //бит снял
-			if ((after > 0) && (before > 0)){
-				flag_mov_sin_A = 1;
+			if ((after[i] > 0) && (before[i] > 0)){
+				flag_mov_sin[i] = 1;
 			}
-			else if ((after < 0) && (before > 0)){
-				flag_mov_sin_A = 1;
+			else if ((after[i] < 0) && (before[i] > 0)){
+				flag_mov_sin[i] = 1;
 			}
-			else if ((after < 0) && (before < 0)){
-				flag_mov_sin_A = 0;
+			else if ((after[i] < 0) && (before[i] < 0)){
+				flag_mov_sin[i] = 0;
 			}
-			else if ((after > 0) && (before < 0)){
-				flag_mov_sin_A = 0;
+			else if ((after[i] > 0) && (before[i] < 0)){
+				flag_mov_sin[i]= 0;
 			}
 			}
 			else{
@@ -378,7 +377,7 @@ void TrueRMS(){
 
 
 
-void sin_compar_A(float *vol, float shift){
+/*void sin_compar_A(float *vol, float shift){
 
 	static int k;
 	k = count_point;
