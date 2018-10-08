@@ -6,7 +6,8 @@
 
 extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
 extern short flag_switch_B;
-extern short flag_aktiv_channel;
+
+short flag_aktiv_channel = 0;
 
 
 
@@ -161,6 +162,8 @@ void channel_A_ON(void){
 					}
 
 				break;
+			default:
+				break;
 		}
 	}
 	else{
@@ -236,6 +239,8 @@ void channel_B_ON(void){
 				case 2:
 					/*тут ничего не делаем*/
 					   break;
+				default:
+						break;
 			}
 		}
 		else{

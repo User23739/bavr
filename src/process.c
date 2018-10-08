@@ -8,16 +8,17 @@
 
 
 extern uint32_t ADCBuffer[]; //переменная значений из АЦП
-extern short int flag_channel_A[];
-extern short int flag_channel_B[];
+extern short int flag_channel[];
+//extern short int flag_channel_B[];
 extern short flag_priori_chann_manual;	//переменная приоритека танала
-extern short flag_status_chann_A;
-extern short flag_status_chann_B;
-extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
-extern short flag_switch_B;
+short flag_status_chann_A = 0;				// состояние канала А;  0 - канал норм, 1 - канал не в норм.
+short flag_status_chann_B = 0;				// состояние канала B;  0 - канал норм, 1 - канал не в норм.
+short flag_switch_A = 0;		    		// 0 - вкл; 1 - откл
+short flag_switch_B = 0;		    		// 0 - вкл; 1 - откл
 extern short flag_aktiv_channel;
+
 //переменные для хранения текущих значений измерения
- float aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
+// float aver_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
 										// [0]-КАНАЛ А ФАЗА 1
 										// [1]-КАНАЛ А ФАЗА 2
@@ -100,7 +101,7 @@ void BuffData(float *vol){
 
 //int count_mes = 0;
 //short int flag_end_aver = 0;   //0-можно мерить; 1- нельзя мерить
-void Aver(void){
+/*void Aver(void){
 	int xa1 = a1;
 	int da1 = 0;
 	int xb1 = b1;
@@ -132,50 +133,52 @@ void Aver(void){
 
 
 
-}
+/*}*/
 
 
 //----------функция переключения------------------------------------------------------------------------
 //судить о качестве измерительного канала будем по 3 последовательным отказам по любой фазе на калане
-int count_err_A[4] = {0};			//[0]- общий на канал; [1]- AA; [2]-AB; [3]-AC;
-int count_err_B[4] = {0};			//[0]- общий на канал; [1]- BA; [2]-BB; [3]-BC;
-int count_work = 0;
 
-void channel_status(void){
-		count_work++;
-		if ((flag_channel_A[0]==0)&&(flag_channel_A[1]==0)&&(flag_channel_A[2]==0)){
-			flag_status_chann_A = 0;
-		}
-		else{
-			if (flag_channel_A[0]==1) count_err_A[1] += 1;
-			if (flag_channel_A[1]==1) count_err_A[2] += 1;
-			if (flag_channel_A[2]==1) count_err_A[3] += 1;
-			if ((count_work == ERR_C_CH)&&((count_err_A[1] == ERR_C_CH)||(count_err_A[2] == ERR_C_CH)||(count_err_A[3] == ERR_C_CH))) flag_status_chann_A = 1 ;
+//int count_work = 0;
 
-		}
+void ChannelStatus(void){
+	static int count_work;
+	static int count_err_A[3] = {0};			// [1]- AA; [2]-AB; [3]-AC;
+	static int count_err_B[3] = {0};			// [1]- BA; [2]-BB; [3]-BC;
+	count_work++;
 
-		if ((flag_channel_B[0]==0)&&(flag_channel_B[1]==0)&&(flag_channel_B[2]==0)){
-			flag_status_chann_B = 0;
-		}
-		else{
-			if (flag_channel_B[0]==1) count_err_B[1] += 1;
-			if (flag_channel_B[1]==1) count_err_B[2] += 1;
-			if (flag_channel_B[2]==1) count_err_B[3] += 1;
-			if ((count_work == ERR_C_CH)&&((count_err_B[1] == ERR_C_CH)||(count_err_B[2] == ERR_C_CH)||(count_err_B[3] == ERR_C_CH))) flag_status_chann_B = 1 ;
+	if ((flag_channel[0]==0)&&(flag_channel[1]==0)&&(flag_channel[2]==0)){
+		flag_status_chann_A = 0;
+	}
+	else{
+		if (flag_channel[0]==1) count_err_A[1] += 1;
+		if (flag_channel[1]==1) count_err_A[2] += 1;
+		if (flag_channel[2]==1) count_err_A[3] += 1;
+		if ((count_work == ERR_C_CH)&&((count_err_A[1] == ERR_C_CH)||(count_err_A[2] == ERR_C_CH)||(count_err_A[3] == ERR_C_CH))) flag_status_chann_A = 1 ;
 
-		}
-		if (count_work == ERR_C_CH) {
-			for (int i=0; i<4; i++)count_err_A[i] = 0;
-			for (int i=0; i<4; i++)count_err_B[i] = 0;
-			count_work = 0;
-		}
+	}
 
+	if ((flag_channel[4]==0)&&(flag_channel[5]==0)&&(flag_channel[6]==0)){
+		flag_status_chann_B = 0;
+	}
+	else{
+		if (flag_channel[4]==1) count_err_B[1] += 1;
+		if (flag_channel[5]==1) count_err_B[2] += 1;
+		if (flag_channel[6]==1) count_err_B[3] += 1;
+		if ((count_work == ERR_C_CH)&&((count_err_B[1] == ERR_C_CH)||(count_err_B[2] == ERR_C_CH)||(count_err_B[3] == ERR_C_CH))) flag_status_chann_B = 1 ;
+
+	}
+	if (count_work == ERR_C_CH) {
+		for (int i=0; i<3; i++)count_err_A[i] = 0;
+		for (int i=0; i<3; i++)count_err_B[i] = 0;
+		count_work = 0;
+	}
 
 }
 
 //--------функция принятия решения о переключении-------------------------------------------------------
 
-void switch_channel(void){
+void SwitchChannel(void){
 	if((flag_status_chann_A == 0)&&(flag_status_chann_B == 0)){
 		if(flag_priori_chann_manual == 0){    //если в ручную активирован канал А
 			switch(flag_aktiv_channel){
