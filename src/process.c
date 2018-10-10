@@ -145,22 +145,25 @@ void BuffData(float *vol){
 
 void ChannelStatus(void){
 	static int count_work;
-	static int count_true_work[2];		//0-A; 1-B
+	static int count_true_work[2];				//0-A; 1-B
 	static int count_err_A[3] = {0};			// [1]- AA; [2]-AB; [3]-AC;
 	static int count_err_B[3] = {0};			// [1]- BA; [2]-BB; [3]-BC;
 	count_work++;
+	send_buffer_flag(0);
 
 	if ((flag_channel[0]==0)&&(flag_channel[1]==0)&&(flag_channel[2]==0)){
-		if(count_true_work[0] >= TRUE_STEP) flag_status_chann_A = 1;
+		if(count_true_work[0] >= TRUE_STEP) flag_status_chann_A = 1, send_buffer_flag(11);
 		count_true_work[0]++;
+		send_buffer_flag(12);
 
 		//flag_gen_ban = 1;
 	}
 	else{
+		send_buffer_flag(10);
 		if (flag_channel[0]==1) count_err_A[1] += 1;
 		if (flag_channel[1]==1) count_err_A[2] += 1;
 		if (flag_channel[2]==1) count_err_A[3] += 1;
-		if ((count_work == ERR_C_CH)&&((count_err_A[1] == ERR_C_CH)||(count_err_A[2] == ERR_C_CH)||(count_err_A[3] == ERR_C_CH))) flag_status_chann_A = 0;
+		if ((count_work == ERR_C_CH)&&((count_err_A[1] == ERR_C_CH)||(count_err_A[2] == ERR_C_CH)||(count_err_A[3] == ERR_C_CH))) flag_status_chann_A = 0, send_buffer_flag(13);
 
 	}
 

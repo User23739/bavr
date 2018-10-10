@@ -4,6 +4,7 @@
 #include "main.h"
 
 #define SHIFT_ZERO 15
+#define CHANN 2
 
 //-------переменныеи и функции для тестов------------------------------------
 volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
@@ -165,16 +166,18 @@ void ZeroDetect(float *vol){
 		static float after[7];
 		static float before[7];
 
-		for (int i = 0; i<3; i++){
+		for (int i = 0; i<7; i++){
 			before[i] = after[i];
 			after[i] = vol[i];
 
 			if(((SIN_A_ref_aver[0]- SHIFT_ZERO ) < vol[i]) && ((SIN_A_ref_aver[0]+ SHIFT_ZERO ) > vol[i])){
 			flag_zero[i] = 1;
 			count_point[i] = 0;
-			GPIO_SetBits(LED2_PORT, LED2);   	//бит установил
-			send_buffer_flag(1);
-			GPIO_ResetBits(LED2_PORT, LED2);    //бит снял
+			if(i == CHANN){
+				GPIO_SetBits(LED2_PORT, LED2);   	//бит установил
+				send_buffer_flag(1);
+				GPIO_ResetBits(LED2_PORT, LED2);    //бит снял
+			}
 			if ((after[i] > 0) && (before[i] > 0)){
 				flag_mov_sin[i] = 1;
 			}
@@ -191,7 +194,8 @@ void ZeroDetect(float *vol){
 			else{
 				flag_zero[i] = 0;
 				count_point[i]++;
-				send_buffer_flag(2);
+				if(i == CHANN) send_buffer_flag(2);
+
 			}
 		}
 }
@@ -232,14 +236,14 @@ void SinCompar(float *vol, float shift){
 		case 0:
 			if (((SIN_A_ref_aver[k[i]]-shift) < vol[i]) && ((SIN_A_ref_aver[k[i]]+shift) > vol[i])){
 				flag_channel[i] = 0;
-				send_buffer_flag(7);
+				//if(i == CHANN) send_buffer_flag(7);
 				//send_buffer_flag(k0);
 				//send_buffer_flag((int)vol[0]);
 				//send_buffer_flag((int)SIN_A_ref_aver[k0]);
 			}
 			else{
 				flag_channel[i] = 1;
-				send_buffer_flag(9);
+				//if(i == CHANN) send_buffer_flag(9);
 				//send_buffer_flag(k0);
 				//send_buffer_flag((int)vol[0]);
 				//send_buffer_flag((int)(SIN_A_ref_aver[k0]*-1));
@@ -248,14 +252,14 @@ void SinCompar(float *vol, float shift){
 		case 1:
 			if ((((SIN_A_ref_aver[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref_aver[k[i]]*-1)+shift) > vol[i])){
 				flag_channel[i] = 0;
-				send_buffer_flag(15);
+				//if(i == CHANN) send_buffer_flag(15);
 				//send_buffer_flag(k0);
 				//send_buffer_flag((int)vol[0]);
 				//send_buffer_flag((int)(SIN_A_ref_aver[k0]*-1));
 								}
 			else{
 				flag_channel[i] = 1;
-				send_buffer_flag(17);
+				//if(i == CHANN) send_buffer_flag(17);
 				}
 			break;
 		default:
@@ -276,7 +280,7 @@ void Control(){
 	ZeroDetect(&real_tmp_chan[0]); 					//детектирование 0
 	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
 	ChannelStatus();								//Опрос состояния каналов
-	SwitchChannel();								//Управление переключениями каналов
+	//SwitchChannel();								//Управление переключениями каналов
 
 
 }
