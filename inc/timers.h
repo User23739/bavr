@@ -10,9 +10,9 @@
 
 #define MAX_GTIMERS 5  // макс число таймеров
 
-#define GTIMER1 0		//таймер отключения канала А
-#define GTIMER2 1		//таймер отключения канала В
-#define GTIMER3 2		//таймер отключения каналов обоих
+#define GTIMER1 0		//таймер отсрочки включения канала А
+#define GTIMER2 1		//таймер отсрочки включения канала В
+#define GTIMER3 2		//резерв
 #define GTIMER4 3		//таймер канала А
 #define GTIMER5 4		//Таймер канала B
 

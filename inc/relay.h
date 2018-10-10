@@ -66,10 +66,10 @@
 
 void RELAY_Init( void );
 void InitKey(void);
-void channel_A_ON(void);
-void channel_B_ON(void);
-void channel_A_OFF(void);
-void channel_B_OFF(void);
+void ChannelAON(void);
+void ChannelBON(void);
+void ChannelAOFF(void);
+void ChannelBOFF(void);
 
 
 

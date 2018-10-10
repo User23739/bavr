@@ -29,7 +29,10 @@ extern float real_tmp_chan[7];
 short flag_mov_sin[7] = {0};						    // 0 -положительная полуволна, 1 -отрицательная полуволна
 //short flag_mov_sin_B = 0;						    // 0 -положительная полуволна, 1 -отрицательная полуволна
 
-//short count_work_A_err = 0;  //счетчик ошибок синхронизации
+short flag_sinch_ch = 0;  	 //флаг синхронности каналов
+							 //0-не синхронны
+							 //1-синхронны
+
 //short err_flag_sinch_A = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
 //short count_work_B_err = 0;  //счетчик ошибок синхронизации
 //short err_flag_sinch_B = 0;	//o - ok; 1- Ошибка флаг ошибки синхронизации
@@ -296,11 +299,7 @@ int main(void){
 
 	while(1){
 
-		channel_A_ON();
-		//channel_B_ON();
-		channel_A_OFF();
-		//channel_B_OFF();
-		//ButControl();
+		ButControl();
 	}
 }
 

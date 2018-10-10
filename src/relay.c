@@ -4,11 +4,11 @@
 
 //инизиализация
 
-extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
-extern short flag_switch_B;
+//extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
+//extern short flag_switch_B;
 
-short flag_aktiv_channel = 0;
-
+short flag_aktiv_channel = 0;				// 0-оба откл; 1-вкл А; 2-вкл В;
+//short flag_gen_ban = 0;						//0-общий запрет на включение; 1-общее разрещение на включение
 
 
 void RELAY_Init( void ){
@@ -93,169 +93,68 @@ void InitKey(void){
 	GPIO_ResetBits(RELAY_6_PORT_ON, RELAY_6_PIN_ON);
 	GPIO_SetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
 	/*тут даем команду на старт таймера отсрочки времени отключения реле 15 мс*/
-	StartGTimer(GTIMER3);
-	flag_aktiv_channel = 0;			//выставляем флаг отключения обоих каналов
+	StartGTimer(GTIMER1); //Задержка включения калала А
+	StartGTimer(GTIMER2); //Задержка включения калала B
+	flag_aktiv_channel = 0;			//оба канала отключенны
 }
 
 //-------функция включения канала А---------------------------------------------------------------------
 
-void channel_A_ON(void){
-	unsigned int Timer2 = 0;
-	unsigned int Timer3 = 0;
-	if (flag_switch_A == 0){       //флаг с условием для включения канала А
-		switch(flag_aktiv_channel){
-			case 0:
-				Timer3 = GetGTimer(GTIMER3);
-				if(Timer3 >KEY_DELAY){
-				/*Включаемм транзисторы */
-					//1
-					GPIO_SetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
-					//2
-					GPIO_SetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
-					//3
-					GPIO_SetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
-					flag_aktiv_channel = 1;
 
-				/*Включаем реле*/
-					//1
-					GPIO_ResetBits(RELAY_1_PORT_OFF, RELAY_1_PIN_OFF);
-					GPIO_SetBits(RELAY_1_PORT_ON, RELAY_1_PIN_ON);
-					//2
-					GPIO_ResetBits(RELAY_2_PORT_OFF, RELAY_2_PIN_OFF);
-					GPIO_SetBits(RELAY_2_PORT_ON, RELAY_2_PIN_ON);
-					//3
-					GPIO_ResetBits(RELAY_3_PORT_OFF, RELAY_3_PIN_OFF);
-					GPIO_SetBits(RELAY_3_PORT_ON, RELAY_3_PIN_ON);
-					StopGTimer(GTIMER3);
-					Timer3 = 0;
-				}
+void ChannelAON(void){
+		/*Включаемм транзисторы */
+		//1
+		GPIO_SetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
+		//2
+		GPIO_SetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
+		//3
+		GPIO_SetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
+		flag_aktiv_channel = 1;
 
-				break;
-			case 1:
-				/*тут ничего не делаем и просто выходим*/
-				break;
-			case 2:
-					Timer2 = GetGTimer(GTIMER2);
-					if(Timer2 > KEY_DELAY){
-						/*Включаемм транзисторы */
-						//1
-						GPIO_SetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
-						//2
-						GPIO_SetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
-						//3
-						GPIO_SetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
-						flag_aktiv_channel = 1;
-
-					/*Включаем реле*/
-						//1
-						GPIO_ResetBits(RELAY_1_PORT_OFF, RELAY_1_PIN_OFF);
-						GPIO_SetBits(RELAY_1_PORT_ON, RELAY_1_PIN_ON);
-						//2
-						GPIO_ResetBits(RELAY_2_PORT_OFF, RELAY_2_PIN_OFF);
-						GPIO_SetBits(RELAY_2_PORT_ON, RELAY_2_PIN_ON);
-						//3
-						GPIO_ResetBits(RELAY_3_PORT_OFF, RELAY_3_PIN_OFF);
-						GPIO_SetBits(RELAY_3_PORT_ON, RELAY_3_PIN_ON);
-						StopGTimer(GTIMER2);
-						Timer2 = 0;
-
-					}
-
-				break;
-			default:
-				break;
-		}
-	}
-	else{
-		/*тут возможна альтернативная реализация*/
-	}
+	/*Включаем реле*/
+		//1
+		GPIO_ResetBits(RELAY_1_PORT_OFF, RELAY_1_PIN_OFF);
+		GPIO_SetBits(RELAY_1_PORT_ON, RELAY_1_PIN_ON);
+		//2
+		GPIO_ResetBits(RELAY_2_PORT_OFF, RELAY_2_PIN_OFF);
+		GPIO_SetBits(RELAY_2_PORT_ON, RELAY_2_PIN_ON);
+		//3
+		GPIO_ResetBits(RELAY_3_PORT_OFF, RELAY_3_PIN_OFF);
+		GPIO_SetBits(RELAY_3_PORT_ON, RELAY_3_PIN_ON);
 
 
 }
 
 //-------функция включения канала B---------------------------------------------------------------------
 
-void channel_B_ON(void){
-	unsigned int Timer1 = 0;
-	unsigned int Timer3 = 0;
-	if (flag_switch_B == 0){
-			switch(flag_aktiv_channel){
-				case 0:
-					Timer3 = GetGTimer(GTIMER3);
-					if(Timer3 >KEY_DELAY){
-					/*Включаемм транзисторы */
-						//4
-						GPIO_SetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
-						//5
-						GPIO_SetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
-						//6
-						GPIO_SetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
-						flag_aktiv_channel = 2;
+void ChannelBON(void){
+		/*Включаемм транзисторы */
+		//4
+		GPIO_SetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
+		//5
+		GPIO_SetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
+		//6
+		GPIO_SetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
+		flag_aktiv_channel = 2;
 
 
-					/*Включаем реле*/
-						//4
-						GPIO_ResetBits(RELAY_4_PORT_OFF, RELAY_4_PIN_OFF);
-						GPIO_SetBits(RELAY_4_PORT_ON, RELAY_4_PIN_ON);
-						//5
-						GPIO_ResetBits(RELAY_5_PORT_OFF, RELAY_5_PIN_OFF);
-						GPIO_SetBits(RELAY_5_PORT_ON, RELAY_5_PIN_ON);
-						//6
-						GPIO_ResetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
-						GPIO_SetBits(RELAY_6_PORT_ON, RELAY_6_PIN_ON);
-						StopGTimer(GTIMER3);
-						Timer3 = 0;
-					}
-
-
-					break;
-				case 1:
-						Timer1 = GetGTimer(GTIMER1);
-						if(Timer1 >KEY_DELAY){
-							/*Включаемм транзисторы */
-							//4
-							GPIO_SetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
-							//5
-							GPIO_SetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
-							//6
-							GPIO_SetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
-							flag_aktiv_channel = 2;
-
-						/*Включаем реле*/
-							//4
-							GPIO_ResetBits(RELAY_4_PORT_OFF, RELAY_4_PIN_OFF);
-							GPIO_SetBits(RELAY_4_PORT_ON, RELAY_4_PIN_ON);
-							//5
-							GPIO_ResetBits(RELAY_5_PORT_OFF, RELAY_5_PIN_OFF);
-							GPIO_SetBits(RELAY_5_PORT_ON, RELAY_5_PIN_ON);
-							//6
-							GPIO_ResetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
-							GPIO_SetBits(RELAY_6_PORT_ON, RELAY_6_PIN_ON);
-							StopGTimer(GTIMER1);
-							Timer1 = 0;
-						}
-
-						break;
-				case 2:
-					/*тут ничего не делаем*/
-					   break;
-				default:
-						break;
-			}
-		}
-		else{
-				/*тут возможна альтернативная реализация*/
-		}
-
-
+	/*Включаем реле*/
+		//4
+		GPIO_ResetBits(RELAY_4_PORT_OFF, RELAY_4_PIN_OFF);
+		GPIO_SetBits(RELAY_4_PORT_ON, RELAY_4_PIN_ON);
+		//5
+		GPIO_ResetBits(RELAY_5_PORT_OFF, RELAY_5_PIN_OFF);
+		GPIO_SetBits(RELAY_5_PORT_ON, RELAY_5_PIN_ON);
+		//6
+		GPIO_ResetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
+		GPIO_SetBits(RELAY_6_PORT_ON, RELAY_6_PIN_ON);
 
 }
 
 //-------функция отключения канала А---------------------------------------------------------------------
 
-void channel_A_OFF(void){
-	if (flag_switch_A == 1){
-	/*Отключаем транзисторы */
+void ChannelAOFF(void){
+		/*Отключаем транзисторы */
 		//1
 		GPIO_ResetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
 		//2
@@ -272,8 +171,7 @@ void channel_A_OFF(void){
 		GPIO_ResetBits(RELAY_3_PORT_ON, RELAY_3_PIN_ON);
 		GPIO_SetBits(RELAY_3_PORT_OFF, RELAY_3_PIN_OFF);
 		/*тут даем команду на старт таймера отсрочки времени отключения реле 15 мс*/
-		StartGTimer(GTIMER1);
-	}
+		StartGTimer(GTIMER2); //Задержка включения калала А
 
 
 
@@ -282,8 +180,7 @@ void channel_A_OFF(void){
 
 //-------функция отключения канала B---------------------------------------------------------------------
 
-void channel_B_OFF(void){
-	if (flag_switch_B == 1){
+void ChannelBOFF(void){
 	/*Отключаем транзисторы */
 	//4
 	GPIO_ResetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
@@ -300,11 +197,12 @@ void channel_B_OFF(void){
 	/*Отключаем 6  реле */
 	GPIO_ResetBits(RELAY_6_PORT_ON, RELAY_6_PIN_ON);
 	GPIO_SetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
+
 	/*тут даем команду на старт таймера отсрочки времени отключения реле 15 мс*/
-	StartGTimer(GTIMER2);
-	}
+	StartGTimer(GTIMER1); //Задержка включения калала А
 
 }
+
 
 /* Возможные режимы работы ключей
  * 1. Синхронный / переключение (каналы синхронны, а нужно просто переключиться на другой)
