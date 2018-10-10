@@ -43,6 +43,7 @@
 
 
 #define KEY_DELAY 60
+#define TRUE_STEP 2
 
 #define REF_MAX 10
 #define REF_MIN -10

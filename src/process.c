@@ -145,12 +145,15 @@ void BuffData(float *vol){
 
 void ChannelStatus(void){
 	static int count_work;
+	static int count_true_work[2];		//0-A; 1-B
 	static int count_err_A[3] = {0};			// [1]- AA; [2]-AB; [3]-AC;
 	static int count_err_B[3] = {0};			// [1]- BA; [2]-BB; [3]-BC;
 	count_work++;
 
 	if ((flag_channel[0]==0)&&(flag_channel[1]==0)&&(flag_channel[2]==0)){
-		flag_status_chann_A = 1;
+		if(count_true_work[0] >= TRUE_STEP) flag_status_chann_A = 1;
+		count_true_work[0]++;
+
 		//flag_gen_ban = 1;
 	}
 	else{
@@ -162,7 +165,8 @@ void ChannelStatus(void){
 	}
 
 	if ((flag_channel[4]==0)&&(flag_channel[5]==0)&&(flag_channel[6]==0)){
-		flag_status_chann_B = 1;
+		if(count_true_work[1] >= TRUE_STEP) flag_status_chann_B = 1;
+		count_true_work[1]++;
 		//flag_gen_ban = 1;
 	}
 	else{
