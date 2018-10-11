@@ -10,7 +10,7 @@
 extern uint32_t ADCBuffer[]; //переменна€ значений из ј÷ѕ
 extern short int flag_channel[];
 extern short flag_priori_chann_manual;	//переменна€ приоритека танала
-short flag_status_chann_A = 0;				// состо€ние канала ј;  0 - канал не в норме, 1 - канал в норм.
+short flag_status_chann_A = 1;				// состо€ние канала ј;  0 - канал не в норме, 1 - канал в норм.
 short flag_status_chann_B = 0;				// состо€ние канала B;  0 - канал не в норме, 1 - канал в норм.
 short flag_switch_A = 0;		    		// 0 - откл; 1 - вкл
 short flag_switch_B = 0;		    		// 0 - откл; 1 - вкл
@@ -149,6 +149,7 @@ void ChannelStatus(void){
 
 	if ((flag_channel[0]==0)&&(flag_channel[1]==0)&&(flag_channel[2]==0)){
 		if(count_true_work[0] >= TRUE_STEP) flag_status_chann_A = 1, send_buffer_flag(11);
+		if (count_true_work[0] >= 1000 ) count_true_work[0] = TRUE_STEP;
 		count_true_work[0]++;
 		send_buffer_flag(12);
 
@@ -165,6 +166,7 @@ void ChannelStatus(void){
 
 	if ((flag_channel[4]==0)&&(flag_channel[5]==0)&&(flag_channel[6]==0)){
 		if(count_true_work[1] >= TRUE_STEP) flag_status_chann_B = 1;
+		if (count_true_work[1] >= 1000 ) count_true_work[1] = TRUE_STEP;
 		count_true_work[1]++;
 		//flag_gen_ban = 1;
 	}

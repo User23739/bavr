@@ -20,7 +20,7 @@ extern float real_tmp_chan[7];
 short flag_mov_sin[7] = {0};						    // 0 -положительная полуволна, 1 -отрицательная полуволна
 
 
-short flag_sinch_ch = 0;  	 //флаг синхронности каналов
+short flag_sinch_ch = 1;  	 //флаг синхронности каналов
 							 //0-не синхронны
 							 //1-синхронны
 
@@ -236,10 +236,10 @@ void Control(){
 
 	TransInData();									//преобразование данных в удобный вид
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
-	ZeroDetect(&real_tmp_chan[0]); 					//детектирование 0
-	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
-	ChannelStatus();								//Опрос состояния каналов
-	//SwitchChannel();								//Управление переключениями каналов
+	//ZeroDetect(&real_tmp_chan[0]); 					//детектирование 0
+	//SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
+	//ChannelStatus();								//Опрос состояния каналов
+	SwitchChannel();								//Управление переключениями каналов
 
 
 }
@@ -262,7 +262,7 @@ int main(void){
 
 	while(1){
 
-		ButControl();
+		//ButControl();
 	}
 }
 
