@@ -9,7 +9,6 @@
 
 extern uint32_t ADCBuffer[]; //переменна€ значений из ј÷ѕ
 extern short int flag_channel[];
-//extern short int flag_channel_B[];
 extern short flag_priori_chann_manual;	//переменна€ приоритека танала
 short flag_status_chann_A = 0;				// состо€ние канала ј;  0 - канал не в норме, 1 - канал в норм.
 short flag_status_chann_B = 0;				// состо€ние канала B;  0 - канал не в норме, 1 - канал в норм.
@@ -139,9 +138,6 @@ void BuffData(float *vol){
 
 
 //----------функци€ переключени€------------------------------------------------------------------------
-//судить о качестве измерительного канала будем по 3 последовательным отказам по любой фазе на калане
-
-//int count_work = 0;
 
 void ChannelStatus(void){
 	static int count_work;
@@ -160,10 +156,10 @@ void ChannelStatus(void){
 	}
 	else{
 		send_buffer_flag(10);
-		if (flag_channel[0]==1) count_err_A[1] += 1;
-		if (flag_channel[1]==1) count_err_A[2] += 1;
-		if (flag_channel[2]==1) count_err_A[3] += 1;
-		if ((count_work == ERR_C_CH)&&((count_err_A[1] == ERR_C_CH)||(count_err_A[2] == ERR_C_CH)||(count_err_A[3] == ERR_C_CH))) flag_status_chann_A = 0, send_buffer_flag(13);
+		if (flag_channel[0]==1) count_err_A[0] += 1;
+		if (flag_channel[1]==1) count_err_A[1] += 1;
+		if (flag_channel[2]==1) count_err_A[2] += 1;
+		if ((count_work >= ERR_C_CH)&&((count_err_A[1] >= ERR_C_CH)||(count_err_A[2] >= ERR_C_CH)||(count_err_A[3] >= ERR_C_CH))) flag_status_chann_A = 0, send_buffer_flag(13);
 
 	}
 
@@ -173,10 +169,10 @@ void ChannelStatus(void){
 		//flag_gen_ban = 1;
 	}
 	else{
-		if (flag_channel[4]==1) count_err_B[1] += 1;
-		if (flag_channel[5]==1) count_err_B[2] += 1;
-		if (flag_channel[6]==1) count_err_B[3] += 1;
-		if ((count_work == ERR_C_CH)&&((count_err_B[1] == ERR_C_CH)||(count_err_B[2] == ERR_C_CH)||(count_err_B[3] == ERR_C_CH))) flag_status_chann_B = 0 ;
+		if (flag_channel[4]==1) count_err_B[0] += 1;
+		if (flag_channel[5]==1) count_err_B[1] += 1;
+		if (flag_channel[6]==1) count_err_B[2] += 1;
+		if ((count_work >= ERR_C_CH)&&((count_err_B[1] >= ERR_C_CH)||(count_err_B[2] >= ERR_C_CH)||(count_err_B[3] >= ERR_C_CH))) flag_status_chann_B = 0 ;
 
 	}
 	if (count_work == ERR_C_CH) {
