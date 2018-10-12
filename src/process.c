@@ -10,10 +10,9 @@
 extern uint32_t ADCBuffer[]; //переменная значений из АЦП
 extern short int flag_channel[];
 extern short flag_priori_chann_manual;	//переменная приоритека танала
-short flag_status_chann_A[3] = {0};				// состояние канала А;  0 - канал не в норме, 1 - канал в норм.
-short flag_status_chann_B[3] = {0};				// состояние канала B;  0 - канал не в норме, 1 - канал в норм.
-short flag_switch_A = 0;		    		// 0 - откл; 1 - вкл
-short flag_switch_B = 0;		    		// 0 - откл; 1 - вкл
+short flag_status_chann[7] = {0};				// состояние канала А;  0 - канал не в норме, 1 - канал в норм.
+short status_chann_A = 0;		    		// 0 - откл; 1 - вкл
+short status_chann_B = 0;		    		// 0 - откл; 1 - вкл
 extern short flag_aktiv_channel;
 extern short flag_sinch_ch;
 //extern short flag_gen_ban;
@@ -91,13 +90,6 @@ void BuffData(float *vol){
 	c1++;
 }
 
-
-
-
-
-
-
-
 //функция усреднения и фильтация фходных значений
 
 //int count_mes = 0;
@@ -144,14 +136,12 @@ void ChannelStatus(void){
 	for (int i=0; i<7; i++){
 		switch (flag_channel[i]){
 			case 0:
-				if(i <= 2) flag_status_chann_A[i] = 0;
-				if(i >= 3) flag_status_chann_B[i] = 0;
+				flag_status_chann[i] = 0;
 				send_buffer_flag(i);
 				send_buffer_flag(111);
 				break;
 			case 1:
-				if(i <= 2) flag_status_chann_A[i] = 1;
-				if(i >= 3) flag_status_chann_B[i] = 1;
+				flag_status_chann[i] = 1;
 				send_buffer_flag(i);
 				send_buffer_flag(222);
 
@@ -160,57 +150,25 @@ void ChannelStatus(void){
 				break;
 		}
 	}
-
-	/*static int count_work;
-	static int count_true_work[2];				//0-A; 1-B
-	static int count_err_A[3] = {0};			// [1]- AA; [2]-AB; [3]-AC;
-	static int count_err_B[3] = {0};			// [1]- BA; [2]-BB; [3]-BC;
-	count_work++;
-	send_buffer_flag(0);
-
-	if ((flag_channel[0]==0)&&(flag_channel[1]==0)&&(flag_channel[2]==0)){
-		if(count_true_work[0] >= TRUE_STEP) flag_status_chann_A = 1, send_buffer_flag(11);
-		if (count_true_work[0] >= 1000 ) count_true_work[0] = TRUE_STEP;
-		count_true_work[0]++;
-		send_buffer_flag(12);
-
-		//flag_gen_ban = 1;
+	if ((flag_status_chann[0])&&(flag_status_chann[1])&&(flag_status_chann[2])){
+		status_chann_A = 1;
 	}
 	else{
-		send_buffer_flag(10);
-		if (flag_channel[0]==1) count_err_A[0] += 1;
-		if (flag_channel[1]==1) count_err_A[1] += 1;
-		if (flag_channel[2]==1) count_err_A[2] += 1;
-		if ((count_work >= ERR_C_CH)&&((count_err_A[1] >= ERR_C_CH)||(count_err_A[2] >= ERR_C_CH)||(count_err_A[3] >= ERR_C_CH))) flag_status_chann_A = 0, send_buffer_flag(13);
-
+		status_chann_A = 0;
 	}
-
-	if ((flag_channel[4]==0)&&(flag_channel[5]==0)&&(flag_channel[6]==0)){
-		if(count_true_work[1] >= TRUE_STEP) flag_status_chann_B = 1;
-		if (count_true_work[1] >= 1000 ) count_true_work[1] = TRUE_STEP;
-		count_true_work[1]++;
-		//flag_gen_ban = 1;
+	if ((flag_status_chann[3])&&(flag_status_chann[4])&&(flag_status_chann[5])){
+		status_chann_B = 1;
 	}
 	else{
-		if (flag_channel[4]==1) count_err_B[0] += 1;
-		if (flag_channel[5]==1) count_err_B[1] += 1;
-		if (flag_channel[6]==1) count_err_B[2] += 1;
-		if ((count_work >= ERR_C_CH)&&((count_err_B[1] >= ERR_C_CH)||(count_err_B[2] >= ERR_C_CH)||(count_err_B[3] >= ERR_C_CH))) flag_status_chann_B = 0 ;
-
+		status_chann_B = 0;
 	}
-	if (count_work == ERR_C_CH) {
-		for (int i=0; i<3; i++)count_err_A[i] = 0;
-		for (int i=0; i<3; i++)count_err_B[i] = 0;
-		count_work = 0;
-	}*/
-
 }
 
 //--------функция принятия решения о переключении-------------------------------------------------------
 
 void SwitchChannel(void){
 
-	if((flag_status_chann_A)&&(flag_status_chann_B)){
+	if((status_chann_A)&&(status_chann_B)){
 		switch (flag_priori_chann_manual){
 				case 0:
 					switch(flag_aktiv_channel){
@@ -285,7 +243,7 @@ void SwitchChannel(void){
 			}
 	}
 
-	if((flag_status_chann_A)&&(!flag_status_chann_B)){
+	if((status_chann_A)&&(!status_chann_B)){
 		switch(flag_aktiv_channel){
 			case 0:
 				if(GetGTimer(GTIMER1) >KEY_DELAY){
@@ -319,7 +277,7 @@ void SwitchChannel(void){
 			}
 
 	}
-	if((!flag_status_chann_A)&&(flag_status_chann_B)){
+	if((!status_chann_A)&&(status_chann_B)){
 		switch(flag_aktiv_channel){
 			case 0:
 				if(GetGTimer(GTIMER2) >KEY_DELAY){
@@ -353,19 +311,12 @@ void SwitchChannel(void){
 		}
 
 	}
-	if((!flag_status_chann_A)&&(!flag_status_chann_B)){
+	if((!status_chann_A)&&(!status_chann_B)){
 		ChannelAOFF();
 		ChannelBOFF();
 		flag_aktiv_channel = 0;
 
 	}
-
-
-
-
-
-
-
 }
 
 
