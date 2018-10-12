@@ -50,6 +50,7 @@
 #define ZIRO 0
 
 #define COUN_SINCH_ERR 20
+#define STOP_RELEY_TIMERS 10000
 
 
 

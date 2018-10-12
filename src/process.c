@@ -132,6 +132,10 @@ void BuffData(float *vol){
 //----------функция переключения------------------------------------------------------------------------
 
 void ChannelStatus(void){
+	static int count_work;
+	static int count_true[2];
+	static int count_false[2];
+	count_work++;
 
 	for (int i=0; i<7; i++){
 		switch (flag_channel[i]){
@@ -151,15 +155,34 @@ void ChannelStatus(void){
 		}
 	}
 	if ((flag_status_chann[0])&&(flag_status_chann[1])&&(flag_status_chann[2])){
-		status_chann_A = 1;
+		//status_chann_A = 1;
+		count_true[0]++;
+		send_buffer_flag(333);
 	}
 	else{
-		status_chann_A = 0;
+		//status_chann_A = 0;
+		count_false[0]++;
+		send_buffer_flag(444);
 	}
 	if ((flag_status_chann[3])&&(flag_status_chann[4])&&(flag_status_chann[5])){
-		status_chann_B = 1;
+		//status_chann_B = 1;
+		count_true[1]++;
 	}
 	else{
+		//status_chann_B = 0;
+		count_false[1]++;
+	}
+
+	if ((count_work >= ERR_C_CH) && (count_true[0]>=ERR_C_CH)){
+		status_chann_A = 1;
+	}
+	else if ((count_work >= ERR_C_CH) && (count_false[0]>=ERR_C_CH)){
+		status_chann_A = 0;
+	}
+	if ((count_work >= ERR_C_CH) && (count_true[1]>=ERR_C_CH)){
+		status_chann_B = 1;
+	}
+	else if ((count_work >= ERR_C_CH) && (count_false[1]>=ERR_C_CH)){
 		status_chann_B = 0;
 	}
 }
@@ -317,6 +340,12 @@ void SwitchChannel(void){
 		flag_aktiv_channel = 0;
 
 	}
+	if(GetGTimer(GTIMER1) >STOP_RELEY_TIMERS){
+		StopGTimer(GTIMER1);
+	}
+	if(GetGTimer(GTIMER2) >STOP_RELEY_TIMERS){
+			StopGTimer(GTIMER2);
+		}
 }
 
 
