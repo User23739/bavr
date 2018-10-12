@@ -248,7 +248,7 @@ void SwitchChannel(void){
 			case 0:
 				if(GetGTimer(GTIMER1) >KEY_DELAY){
 					ChannelAON();
-					StopGTimer(GTIMER1);
+			(GTIMER1);
 					}
 				break;
 			case 1:

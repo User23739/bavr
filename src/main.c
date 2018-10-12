@@ -159,7 +159,7 @@ void ZeroDetect(float *vol){
 			else{
 				flag_zero[i] = 0;
 				count_point[i]++;
-				if(i == CHANN) send_buffer_flag(2);
+				//if(i == CHANN) send_buffer_flag(2);
 
 			}
 		}
@@ -238,8 +238,8 @@ void Control(){
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
 	ZeroDetect(&real_tmp_chan[0]); 					//детектирование 0
 	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
-	ChannelStatus();								//Опрос состояния каналов
-	SwitchChannel();								//Управление переключениями каналов
+	//ChannelStatus();								//Опрос состояния каналов
+	//SwitchChannel();								//Управление переключениями каналов
 
 
 }
@@ -262,7 +262,7 @@ int main(void){
 
 	while(1){
 
-		//ButControl();
+		ButControl();
 	}
 }
 
