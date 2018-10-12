@@ -11,7 +11,7 @@
 #define REF_ZIRO 2048      //значение 0 в абсолютных данных
 #define U_QUANTUM 0.25513    //значение 1 кванта в вольтах
 #define AVER_N 2			//значение усреднения
-#define ERR_C_CH 12			//колличество допустимых ощибок на канал
+#define ERR_C_CH 40			//колличество допустимых ощибок на канал
 
 void TransInData(void);
 void BuffData(float *vol);

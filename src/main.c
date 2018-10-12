@@ -238,8 +238,8 @@ void Control(){
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
 	ZeroDetect(&real_tmp_chan[0]); 					//детектирование 0
 	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
-	//ChannelStatus();								//Опрос состояния каналов
-	//SwitchChannel();								//Управление переключениями каналов
+	ChannelStatus();								//Опрос состояния каналов
+	SwitchChannel();								//Управление переключениями каналов
 
 
 }

@@ -185,6 +185,14 @@ void ChannelStatus(void){
 	else if ((count_work >= ERR_C_CH) && (count_false[1]>=ERR_C_CH)){
 		status_chann_B = 0;
 	}
+	if (count_work >= ERR_C_CH+1){
+		count_work = 0;
+		count_true[0] = 0;
+		count_true[1] = 0;
+		count_false[0] = 0;
+		count_false[1] = 0;
+
+	}
 }
 
 //--------функция принятия решения о переключении-------------------------------------------------------
