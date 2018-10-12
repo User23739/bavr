@@ -10,8 +10,8 @@
 extern uint32_t ADCBuffer[]; //переменная значений из АЦП
 extern short int flag_channel[];
 extern short flag_priori_chann_manual;	//переменная приоритека танала
-short flag_status_chann_A = 1;				// состояние канала А;  0 - канал не в норме, 1 - канал в норм.
-short flag_status_chann_B = 0;				// состояние канала B;  0 - канал не в норме, 1 - канал в норм.
+short flag_status_chann_A[3] = {0};				// состояние канала А;  0 - канал не в норме, 1 - канал в норм.
+short flag_status_chann_B[3] = {0};				// состояние канала B;  0 - канал не в норме, 1 - канал в норм.
 short flag_switch_A = 0;		    		// 0 - откл; 1 - вкл
 short flag_switch_B = 0;		    		// 0 - откл; 1 - вкл
 extern short flag_aktiv_channel;
@@ -140,7 +140,28 @@ void BuffData(float *vol){
 //----------функция переключения------------------------------------------------------------------------
 
 void ChannelStatus(void){
-	static int count_work;
+
+	for (int i=0; i<7; i++){
+		switch (flag_channel[i]){
+			case 0:
+				if(i <= 2) flag_status_chann_A[i] = 0;
+				if(i >= 3) flag_status_chann_B[i] = 0;
+				send_buffer_flag(i);
+				send_buffer_flag(111);
+				break;
+			case 1:
+				if(i <= 2) flag_status_chann_A[i] = 1;
+				if(i >= 3) flag_status_chann_B[i] = 1;
+				send_buffer_flag(i);
+				send_buffer_flag(222);
+
+				break;
+			default:
+				break;
+		}
+	}
+
+	/*static int count_work;
 	static int count_true_work[2];				//0-A; 1-B
 	static int count_err_A[3] = {0};			// [1]- AA; [2]-AB; [3]-AC;
 	static int count_err_B[3] = {0};			// [1]- BA; [2]-BB; [3]-BC;
@@ -181,7 +202,7 @@ void ChannelStatus(void){
 		for (int i=0; i<3; i++)count_err_A[i] = 0;
 		for (int i=0; i<3; i++)count_err_B[i] = 0;
 		count_work = 0;
-	}
+	}*/
 
 }
 

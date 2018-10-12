@@ -20,7 +20,7 @@ extern float real_tmp_chan[7];
 short flag_mov_sin[7] = {0};						    // 0 -положительная полуволна, 1 -отрицательная полуволна
 
 
-short flag_sinch_ch = 1;  	 //флаг синхронности каналов
+short flag_sinch_ch = 0;  	 //флаг синхронности каналов
 							 //0-не синхронны
 							 //1-синхронны
 
@@ -59,10 +59,10 @@ float shift20 = 48;
 
 
 //short int flag_channel_A[3]={0};
-short int flag_channel[7] = {0};		//[0] - флаг состояния АА  0 - хорошо; 1 - плохая;
+short int flag_channel[7] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
 										//[1] - флаг состояния AB
 										//[2] - флаг состояния AC
-										//[0] - флаг состояния BА   0 - хорошо; 1 - плохая;
+										//[0] - флаг состояния BА   0 - синусоида не в норме; 1 - синусоида в норме;
 										//[1] - флаг состояния BB
 										//[2] - флаг состояния BC
 										//[0] - флаг состояния CA
@@ -140,7 +140,7 @@ void ZeroDetect(float *vol){
 			count_point[i] = 0;
 			if(i == CHANN){
 				GPIO_SetBits(LED2_PORT, LED2);   	//бит установил
-				send_buffer_flag(1);
+				//send_buffer_flag(1);
 				GPIO_ResetBits(LED2_PORT, LED2);    //бит снял
 			}
 			if ((after[i] > 0) && (before[i] > 0)){
@@ -194,14 +194,14 @@ void SinCompar(float *vol, float shift){
 		switch(flag_mov_sin[i]){
 		case 0:
 			if (((SIN_A_ref_aver[k[i]]-shift) < vol[i]) && ((SIN_A_ref_aver[k[i]]+shift) > vol[i])){
-				flag_channel[i] = 0;
+				flag_channel[i] = 1;
 				//if(i == CHANN) send_buffer_flag(7);
 				//send_buffer_flag(k0);
 				//send_buffer_flag((int)vol[0]);
 				//send_buffer_flag((int)SIN_A_ref_aver[k0]);
 			}
 			else{
-				flag_channel[i] = 1;
+				flag_channel[i] = 0;
 				//if(i == CHANN) send_buffer_flag(9);
 				//send_buffer_flag(k0);
 				//send_buffer_flag((int)vol[0]);
@@ -210,14 +210,14 @@ void SinCompar(float *vol, float shift){
 			break;
 		case 1:
 			if ((((SIN_A_ref_aver[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref_aver[k[i]]*-1)+shift) > vol[i])){
-				flag_channel[i] = 0;
+				flag_channel[i] = 1;
 				//if(i == CHANN) send_buffer_flag(15);
 				//send_buffer_flag(k0);
 				//send_buffer_flag((int)vol[0]);
 				//send_buffer_flag((int)(SIN_A_ref_aver[k0]*-1));
 								}
 			else{
-				flag_channel[i] = 1;
+				flag_channel[i] = 0;
 				//if(i == CHANN) send_buffer_flag(17);
 				}
 			break;
@@ -236,10 +236,10 @@ void Control(){
 
 	TransInData();									//преобразование данных в удобный вид
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер
-	//ZeroDetect(&real_tmp_chan[0]); 					//детектирование 0
-	//SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
-	//ChannelStatus();								//Опрос состояния каналов
-	SwitchChannel();								//Управление переключениями каналов
+	ZeroDetect(&real_tmp_chan[0]); 					//детектирование 0
+	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
+	ChannelStatus();								//Опрос состояния каналов
+	//SwitchChannel();								//Управление переключениями каналов
 
 
 }
