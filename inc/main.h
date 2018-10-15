@@ -59,6 +59,7 @@ void Control(void);
 void USARTSend(const unsigned char *pucBuffer);
 void SinCompar(float *vol, float shift);
 void ZeroDetect(float *vol);
+float TrueRMS(float *vol);
 
 
 
