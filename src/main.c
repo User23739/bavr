@@ -37,10 +37,10 @@ short flag_zero[7] = {0};					// 0-"0"не найден; 1-"0" найден
 //------Опорная синусоида в табличном виде
 //Синхронизация осуществляется по синусоиде А
 
-float SIN_A_ref_aver[] = {13, 40, 66, 91, 116, 141, 164, 187, 208, 228, 247,
-					 264, 279, 293, 305, 315, 323, 329, 333, 355, 335, 333,
-						329, 323, 315, 305, 293, 279, 264, 247, 228, 208,
-						187, 164, 141, 116, 91, 66, 40, 14};					// идеал положительной полуволны синусоиды усредненной
+float SIN_A_ref_aver[] = {13, 40, 66, 91, 116, 141, 164, 187, 208, 228,
+							247, 264, 279, 293, 305, 315, 323, 329, 333, 355,
+							335, 333, 329, 323, 315, 305, 293, 279, 264, 247,
+							228, 208, 187, 164, 141, 116, 91, 66, 40, 14};					// идеал положительной полуволны синусоиды усредненной
 
 float SIN_A_ref[] = {27, 53, 79, 104, 129, 153, 176, 198, 219, 238, 256,
 					 272, 287, 300, 311, 320, 327, 332, 335, 336, 335, 332,
@@ -149,6 +149,7 @@ void ZeroDetect(float *vol){
 		for (int i = 0; i<7; i++){
 			//before[i] = after[i];
 			//after[i] = vol[i];
+			if (count_point[i]>=41) count_point[i]=0;
 
 			if(((SIN_A_ref_aver[0]- SHIFT_ZERO ) < vol[i]) && ((SIN_A_ref_aver[0]+ SHIFT_ZERO ) > vol[i])){
 			flag_zero[i] = 1;
@@ -187,7 +188,7 @@ void Freq(){
 
 
 /*Функция расчета среднеквадратичного значения*/
-float TrueRMS(float *vol){
+/*float TrueRMS(float *vol){
 	static float var_sum[7] = {0};
 	static float rezult[7] = {0};
 	static int N = 0;
@@ -196,12 +197,12 @@ float TrueRMS(float *vol){
 	if(N < 40){
 		for (int i=0; i<7; i++) var_sum[i] +=var[i]*var[i];
 	}
-	else{ for (int i = 0; i<7; i++) rezult[i] =sqrt(var_sum/N) ;
+	else{ for (int i = 0; i<7; i++) rezult[i] =sqrt(var_sum[i]/N) ;
 	}
 
-	return rezult;
+	return &rezult[0];
 }
-
+*/
 
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
 /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
@@ -213,76 +214,35 @@ float TrueRMS(float *vol){
 void SinCompar(float *vol, float shift){
 
 	static int k[7];
-	int k_err = 0;
+	int k_err[7] = {0};
+	for (int i=0; i<7; i++){
+		flag_channel_posit[i] = 0;
+		flag_channel_negat[i] = 0;
+	}
 
 	for (int i=0; i<7; i++){
 
 		k[i] = count_point[i];
-		switch(flag_zero[i]){
-			case 0:
-				if (k > 40){
-					k_err = k - 40;
-					if (((SIN_A_ref_aver[k_err[i]]-shift) < vol[i]) && ((SIN_A_ref_aver[k_err[i]]+shift) > vol[i])){
-						flag_channel_posit[i] = 1;
 
-					}
-					else{
-						flag_channel_posit[i] = 0;
+		if (((SIN_A_ref_aver[k[i]]-shift) < vol[i]) && ((SIN_A_ref_aver[k[i]]+shift) > vol[i])){
+			flag_channel_posit[i] = 1;
 
-					}
+		}
+		else{
+			flag_channel_posit[i] = 0;
 
-					if ((((SIN_A_ref_aver[k_err[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref_aver[k_err[i]]*-1)+shift) > vol[i])){
-						flag_channel_negat[i] = 1;
+		}
 
-					}
-					else{
-						flag_channel_negat[i] = 0;
+		if ((((SIN_A_ref_aver[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref_aver[k[i]]*-1)+shift) > vol[i])){
+			flag_channel_negat[i] = 1;
 
-						}
+		}
+		else{
+			flag_channel_negat[i] = 0;
 
-				}
-				else{
-					if (((SIN_A_ref_aver[k[i]]-shift) < vol[i]) && ((SIN_A_ref_aver[k[i]]+shift) > vol[i])){
-						flag_channel_posit[i] = 1;
-
-					}
-					else{
-						flag_channel_posit[i] = 0;
-
-					}
-
-					if ((((SIN_A_ref_aver[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref_aver[k[i]]*-1)+shift) > vol[i])){
-						flag_channel_negat[i] = 1;
-
-					}
-					else{
-						flag_channel_negat[i] = 0;
-
-						}
-				}
-				break;
-			case 1:
-				if (((SIN_A_ref_aver[k[i]]-shift) < vol[i]) && ((SIN_A_ref_aver[k[i]]+shift) > vol[i])){
-					flag_channel_posit[i] = 1;
-
-				}
-				else{
-					flag_channel_posit[i] = 0;
-
-				}
-
-				if ((((SIN_A_ref_aver[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref_aver[k[i]]*-1)+shift) > vol[i])){
-					flag_channel_negat[i] = 1;
-
-				}
-				else{
-					flag_channel_negat[i] = 0;
-
-					}
-				break;
-			default:
-				break;
 			}
+
+
 		if ((flag_channel_posit[i]) || (flag_channel_negat[i])){
 			flag_channel[i] = 1;
 		}
