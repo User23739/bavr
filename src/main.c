@@ -214,7 +214,9 @@ void Freq(){
 void SinCompar(float *vol, float shift){
 
 	static int k[7];
-	int k_err[7] = {0};
+	static int count_zero[7] = {0};
+	static int count_work;
+	count_work++;
 	for (int i=0; i<7; i++){
 		flag_channel_posit[i] = 0;
 		flag_channel_negat[i] = 0;
@@ -242,6 +244,7 @@ void SinCompar(float *vol, float shift){
 
 			}
 
+//нужно добавить преверку на ноль
 
 		if ((flag_channel_posit[i]) || (flag_channel_negat[i])){
 			flag_channel[i] = 1;
@@ -295,6 +298,7 @@ void SinCompar(float *vol, float shift){
 			break;
 		}*/
 	}
+	if(count_work >= COUNT_END) count_work = 0;
 
 
 
