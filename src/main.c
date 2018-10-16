@@ -143,41 +143,25 @@ void USARTSend(const unsigned char *pucBuffer){
 /*Функция детектирования 0*/
 
 void ZeroDetect(float *vol){
-		//static float after[7];
-		//static float before[7];
+
 
 		for (int i = 0; i<7; i++){
-			//before[i] = after[i];
-			//after[i] = vol[i];
-			//if (count_point[i]>=41) count_point[i]=0;
 
 			if(((SIN_A_ref_aver[0]- SHIFT_ZERO ) < vol[i]) && ((SIN_A_ref_aver[0]+ SHIFT_ZERO ) > vol[i])){
 			flag_zero[i] = 1;
 			if (GetGTimer(GTIMER6 + i) >= MEG_POINT) StopGTimer(GTIMER6 + i);
 			StartGTimer(GTIMER6  +i); //включение таймеров
-			//count_point[i] = 0;
+
 			if(i == CHANN){
 				GPIO_SetBits(LED2_PORT, LED2);   	//бит установил
 				//send_buffer_flag(1);
 				GPIO_ResetBits(LED2_PORT, LED2);    //бит снял
 			}
-			/*if ((after[i] > 0) && (before[i] > 0)){
-				flag_mov_sin[i] = 1;
-			}
-			else if ((after[i] < 0) && (before[i] > 0)){
-				flag_mov_sin[i] = 1;
-			}
-			else if ((after[i] < 0) && (before[i] < 0)){
-				flag_mov_sin[i] = 0;
-			}
-			else if ((after[i] > 0) && (before[i] < 0)){
-				flag_mov_sin[i]= 0;
-			}*/
+
 			}
 			else{
 				flag_zero[i] = 0;
-				//count_point[i]++;
-				//if(i == CHANN) send_buffer_flag(2);
+
 
 			}
 		}
@@ -216,9 +200,7 @@ void Freq(){
 void SinCompar(float *vol, float shift){
 
 	static int k[7];
-	//static int count_zero[7] = {0};
-	//static int count_work;
-	//count_work++;
+
 	for (int i=0; i<7; i++){
 		flag_channel_posit[i] = 0;
 		flag_channel_negat[i] = 0;
@@ -246,8 +228,6 @@ void SinCompar(float *vol, float shift){
 
 			}
 
-//нужно добавить преверку на ноль
-
 		if ((flag_channel_posit[i]) || (flag_channel_negat[i])){
 			flag_channel[i] = 1;
 		}
@@ -255,55 +235,7 @@ void SinCompar(float *vol, float shift){
 			flag_channel[i] = 0;
 		}
 
-
-
-
-
-
-
-
-
-
-
-
-		/*switch(flag_mov_sin[i]){
-		case 0:
-			if (((SIN_A_ref_aver[k[i]]-shift) < vol[i]) && ((SIN_A_ref_aver[k[i]]+shift) > vol[i])){
-				flag_channel[i] = 1;
-				//if(i == CHANN) send_buffer_flag(7);
-				//send_buffer_flag(k0);
-				//send_buffer_flag((int)vol[0]);
-				//send_buffer_flag((int)SIN_A_ref_aver[k0]);
-			}
-			else{
-				flag_channel[i] = 0;
-				//if(i == CHANN) send_buffer_flag(9);
-				//send_buffer_flag(k0);
-				//send_buffer_flag((int)vol[0]);
-				//send_buffer_flag((int)(SIN_A_ref_aver[k0]*-1));
-			}
-			break;
-		case 1:
-			if ((((SIN_A_ref_aver[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref_aver[k[i]]*-1)+shift) > vol[i])){
-				flag_channel[i] = 1;
-				//if(i == CHANN) send_buffer_flag(15);
-				//send_buffer_flag(k0);
-				//send_buffer_flag((int)vol[0]);
-				//send_buffer_flag((int)(SIN_A_ref_aver[k0]*-1));
-								}
-			else{
-				flag_channel[i] = 0;
-				//if(i == CHANN) send_buffer_flag(17);
-				}
-			break;
-		default:
-			break;
-		}*/
 	}
-	//if(count_work >= COUNT_END) count_work = 0;
-
-
-
 }
 
 
