@@ -8,3 +8,4 @@ StdPeriph_Driver/
 bavr_my_not_frtos Run.cfg
 bavr_my_not_frtos Debug.cfg
 LinkerScript.ld
+problems.txt
