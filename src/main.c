@@ -149,11 +149,13 @@ void ZeroDetect(float *vol){
 		for (int i = 0; i<7; i++){
 			//before[i] = after[i];
 			//after[i] = vol[i];
-			if (count_point[i]>=41) count_point[i]=0;
+			//if (count_point[i]>=41) count_point[i]=0;
 
 			if(((SIN_A_ref_aver[0]- SHIFT_ZERO ) < vol[i]) && ((SIN_A_ref_aver[0]+ SHIFT_ZERO ) > vol[i])){
 			flag_zero[i] = 1;
-			count_point[i] = 0;
+			if (GetGTimer(GTIMER6 + i) >= MEG_POINT) StopGTimer(GTIMER6 + i);
+			StartGTimer(GTIMER6  +i); //включение таймеров
+			//count_point[i] = 0;
 			if(i == CHANN){
 				GPIO_SetBits(LED2_PORT, LED2);   	//бит установил
 				//send_buffer_flag(1);
@@ -174,7 +176,7 @@ void ZeroDetect(float *vol){
 			}
 			else{
 				flag_zero[i] = 0;
-				count_point[i]++;
+				//count_point[i]++;
 				//if(i == CHANN) send_buffer_flag(2);
 
 			}
@@ -214,9 +216,9 @@ void Freq(){
 void SinCompar(float *vol, float shift){
 
 	static int k[7];
-	static int count_zero[7] = {0};
-	static int count_work;
-	count_work++;
+	//static int count_zero[7] = {0};
+	//static int count_work;
+	//count_work++;
 	for (int i=0; i<7; i++){
 		flag_channel_posit[i] = 0;
 		flag_channel_negat[i] = 0;
@@ -224,7 +226,7 @@ void SinCompar(float *vol, float shift){
 
 	for (int i=0; i<7; i++){
 
-		k[i] = count_point[i];
+		k[i] = GetGTimer(GTIMER6 + i);
 
 		if (((SIN_A_ref_aver[k[i]]-shift) < vol[i]) && ((SIN_A_ref_aver[k[i]]+shift) > vol[i])){
 			flag_channel_posit[i] = 1;
@@ -298,7 +300,7 @@ void SinCompar(float *vol, float shift){
 			break;
 		}*/
 	}
-	if(count_work >= COUNT_END) count_work = 0;
+	//if(count_work >= COUNT_END) count_work = 0;
 
 
 

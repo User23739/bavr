@@ -52,6 +52,7 @@
 #define COUN_SINCH_ERR 20
 #define STOP_RELEY_TIMERS 10000
 #define COUNT_END 10000
+#define MEG_POINT 40
 
 
 
