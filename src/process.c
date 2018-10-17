@@ -82,7 +82,7 @@ void BuffData(float *vol){
 
 void ChannelStatus(void){
 	static int count_work;
-	static int count_true[2];
+	//static int count_true[2];
 	static int count_false[2];
 	count_work++;
 
@@ -109,8 +109,8 @@ void ChannelStatus(void){
 		//send_buffer_flag(333);
 	}
 	else{
-		status_chann_A = 0;
-		//count_false[0]++;
+		//status_chann_A = 0;
+		count_false[0]++;
 		//send_buffer_flag(444);
 	}
 	if ((flag_status_chann[3])&&(flag_status_chann[4])&&(flag_status_chann[5])){
@@ -118,8 +118,8 @@ void ChannelStatus(void){
 		//count_true[1]++;
 	}
 	else{
-		status_chann_B = 0;
-		//count_false[1]++;
+		//status_chann_B = 0;
+		count_false[1]++;
 	}
 
 	/*if ((count_work >= ERR_C_CH) && (count_true[0]>=ERR_C_CH)){
@@ -142,6 +142,20 @@ void ChannelStatus(void){
 		count_false[1] = 0;
 
 	}*/
+	if ((count_work >= ERR_C_CH) && (count_false[0]>=ERR_C_CH)){
+			status_chann_A = 0;
+		}
+	if ((count_work >= ERR_C_CH) && (count_false[1]>=ERR_C_CH)){
+			status_chann_B = 0;
+		}
+	if (count_work >= ERR_C_CH+1){
+			count_work = 0;
+			//count_true[0] = 0;
+			//count_true[1] = 0;
+			count_false[0] = 0;
+			count_false[1] = 0;
+
+		}
 }
 
 //--------функция принятия решения о переключении-------------------------------------------------------
