@@ -22,7 +22,7 @@ void ADC_DMA_Init( void )
     DMA_InitStructure.DMA_BufferSize            = 7;
     DMA_InitStructure.DMA_DIR                   = DMA_DIR_PeripheralToMemory;
     DMA_InitStructure.DMA_PeripheralInc         = DMA_PeripheralInc_Disable;
-    DMA_InitStructure.DMA_MemoryInc             = DMA_MemoryInc_Enable;
+    DMA_InitStructure.DMA_MemoryInc             = (uint32_t)0x00000400;
     DMA_InitStructure.DMA_MemoryDataSize        = DMA_PeripheralDataSize_Word;
     DMA_InitStructure.DMA_Mode                  = DMA_Mode_Circular;
     DMA_InitStructure.DMA_Priority              = DMA_Priority_High;
@@ -111,16 +111,16 @@ void ADC_DMA_Init( void )
 	ADC_setup.ADC_Resolution = ADC_Resolution_12b;
 	ADC_Init(ADC1, &ADC_setup);
 
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1,  ADC_SampleTime_3Cycles);
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_3, 2,  ADC_SampleTime_3Cycles);
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 3,  ADC_SampleTime_3Cycles);
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_5, 4,  ADC_SampleTime_3Cycles);
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_6, 5,  ADC_SampleTime_3Cycles);
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 6,  ADC_SampleTime_3Cycles);
-	ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 7,  ADC_SampleTime_3Cycles);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_4, 1,  ADC_SampleTime_15Cycles);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_3, 2,  ADC_SampleTime_15Cycles);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_0, 3,  ADC_SampleTime_15Cycles);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_5, 4,  ADC_SampleTime_15Cycles);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_6, 5,  ADC_SampleTime_15Cycles);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_8, 6,  ADC_SampleTime_15Cycles);
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_9, 7,  ADC_SampleTime_15Cycles);
 
 	ADC_CommonInitStructure.ADC_Mode = ADC_Mode_Independent;
-	ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div4;
+	ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div2;
 	ADC_CommonInitStructure.ADC_DMAAccessMode = ADC_DMAAccessMode_1;
 	ADC_CommonInitStructure.ADC_TwoSamplingDelay = ADC_TwoSamplingDelay_5Cycles;
 	ADC_CommonInit(&ADC_CommonInitStructure);
