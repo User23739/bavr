@@ -50,7 +50,7 @@ void TransInData(void){
 
  // переменные  буфера
 // буфер кольцево для хранения данных измерения
-float buff_chanA1[1001] = {0};
+float buff_chanA1[201] = {0};
 float buff_chanA2[201] = {0};
 float buff_chanA3[201] = {0};
 
@@ -75,7 +75,7 @@ void BuffData(float *vol){
 	//static int c1;					//указатели буфера канала С
 
 
-	if(a1 >= 1000 ) a1 = 0;
+	if(a1 >= 200 ) a1 = 0;
 	buff_chanA1[a1] = vol[0];
 	buff_chanA2[a1] = vol[1];
 	buff_chanA3[a1] = vol[2];
@@ -132,22 +132,22 @@ void BuffData(float *vol){
 //----------функция переключения------------------------------------------------------------------------
 
 void ChannelStatus(void){
-	static int count_work;
+	//static int count_work;
 	static int count_true[2];
 	static int count_false[2];
-	count_work++;
+	//count_work++;
 
 	for (int i=0; i<7; i++){
 		switch (flag_channel[i]){
 			case 0:
 				flag_status_chann[i] = 0;
-				send_buffer_flag(i);
-				send_buffer_flag(111);
+				//send_buffer_flag(i);
+				//send_buffer_flag(111);
 				break;
 			case 1:
 				flag_status_chann[i] = 1;
-				send_buffer_flag(i);
-				send_buffer_flag(222);
+				//send_buffer_flag(i);
+				//send_buffer_flag(222);
 
 				break;
 			default:
@@ -157,12 +157,12 @@ void ChannelStatus(void){
 	if ((flag_status_chann[0])&&(flag_status_chann[1])&&(flag_status_chann[2])){
 		//status_chann_A = 1;
 		count_true[0]++;
-		send_buffer_flag(333);
+		//send_buffer_flag(333);
 	}
 	else{
 		//status_chann_A = 0;
 		count_false[0]++;
-		send_buffer_flag(444);
+		//send_buffer_flag(444);
 	}
 	if ((flag_status_chann[3])&&(flag_status_chann[4])&&(flag_status_chann[5])){
 		//status_chann_B = 1;
@@ -173,26 +173,24 @@ void ChannelStatus(void){
 		count_false[1]++;
 	}
 
-	if ((count_work >= ERR_C_CH) && (count_true[0]>=ERR_C_CH)){
+	if (count_true[0]>=ERR_C_CH){
 		status_chann_A = 1;
 	}
-	else if ((count_work >= ERR_C_CH) && (count_false[0]>=ERR_C_CH)){
+	else if (count_false[0]>=ERR_C_CH){
 		status_chann_A = 0;
 	}
-	if ((count_work >= ERR_C_CH) && (count_true[1]>=ERR_C_CH)){
+	if (count_true[1]>=ERR_C_CH){
 		status_chann_B = 1;
 	}
-	else if ((count_work >= ERR_C_CH) && (count_false[1]>=ERR_C_CH)){
+	else if (count_false[1]>=ERR_C_CH){
 		status_chann_B = 0;
 	}
-	if (count_work >= ERR_C_CH+1){
-		count_work = 0;
-		count_true[0] = 0;
-		count_true[1] = 0;
-		count_false[0] = 0;
-		count_false[1] = 0;
+	if (count_true[0] >= ERR_C_CH+1 ) count_true[0] = 0;;
+	if (count_true[1] >= ERR_C_CH+1) count_true[1] = 0;;
+	if (count_false[0] >= ERR_C_CH+1) count_false[0] = 0;
+	if (count_false[1] >= ERR_C_CH+1) count_false[1] = 0;
 
-	}
+
 }
 
 //--------функция принятия решения о переключении-------------------------------------------------------
