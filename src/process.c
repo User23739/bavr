@@ -42,15 +42,15 @@ void TransInData(void){
 
  // переменные  буфера
 // буфер кольцево для хранения данных измерения
-float buff_chanA1[201] = {0};
-float buff_chanA2[201] = {0};
-float buff_chanA3[201] = {0};
+float buff_chanA1[321] = {0};
+float buff_chanA2[321] = {0};
+float buff_chanA3[321] = {0};
 
-float buff_chanB1[201] = {0};
-float buff_chanB2[201] = {0};
-float buff_chanB3[201] = {0};
+float buff_chanB1[321] = {0};
+float buff_chanB2[321] = {0};
+float buff_chanB3[321] = {0};
 
-float buff_chanC1[201] = {0};
+float buff_chanC1[321] = {0};
 
 
 
@@ -63,17 +63,17 @@ int c1 = 0;					//указатели буфера канала С
 void BuffData(float *vol){
 
 
-	if(a1 >= 200 ) a1 = 0;
+	if(a1 >= 320 ) a1 = 0;
 	buff_chanA1[a1] = vol[0];
 	buff_chanA2[a1] = vol[1];
 	buff_chanA3[a1] = vol[2];
 	a1++;
-	if(b1  >= 200) b1 = 0;
+	if(b1  >= 320) b1 = 0;
 	buff_chanB1[b1] = vol[3];
 	buff_chanB2[b1] = vol[4];
 	buff_chanB3[b1] = vol[5];
 	b1++;
-	if(c1  >= 200 ) c1 = 0;
+	if(c1  >= 320 ) c1 = 0;
 	buff_chanC1[c1] = vol[6];
 	c1++;
 }
@@ -82,10 +82,7 @@ void BuffData(float *vol){
 //----------функция переключения------------------------------------------------------------------------
 
 void ChannelStatus(void){
-
-
 	static int count_true[2];
-
 	static int count_false[2];
 	//count_work++;
 
@@ -106,7 +103,7 @@ void ChannelStatus(void){
 				break;
 		}
 	}
-	if ((flag_status_chann[0])&&(flag_status_chann[1])&&(flag_status_chann[2])){
+	if ((flag_status_chann[0])/*&&(flag_status_chann[1])&&(flag_status_chann[2])*/){
 
 		//status_chann_A = 1;
 		count_true[0]++;
@@ -118,7 +115,7 @@ void ChannelStatus(void){
 		count_false[0]++;
 		//send_buffer_flag(444);
 	}
-	if ((flag_status_chann[3])&&(flag_status_chann[4])&&(flag_status_chann[5])){
+	if ((flag_status_chann[3])/*&&(flag_status_chann[4])&&(flag_status_chann[5])*/){
 		status_chann_B = 1;
 		//count_true[1]++;
 	}
@@ -128,23 +125,23 @@ void ChannelStatus(void){
 	}
 
 
-	if (count_true[0]>=ERR_C_CH){
+	if (count_true[0]>= TRU_C_CH){
 
 		status_chann_A = 1;
 	}
 	else if (count_false[0]>=ERR_C_CH){
 		status_chann_A = 0;
 	}
-	if (count_true[1]>=ERR_C_CH){
+	if (count_true[1]>= TRU_C_CH){
 		status_chann_B = 1;
 	}
 	else if (count_false[1]>=ERR_C_CH){
 		status_chann_B = 0;
 	}
-	if (count_true[0] >= ERR_C_CH+1 ) count_true[0] = 0;;
-	if (count_true[1] >= ERR_C_CH+1) count_true[1] = 0;;
-	if (count_false[0] >= ERR_C_CH+1) count_false[0] = 0;
-	if (count_false[1] >= ERR_C_CH+1) count_false[1] = 0;
+	if (count_true[0] >= TRU_C_CH + 1 ) count_true[0] = 0;;
+	if (count_true[1] >= TRU_C_CH + 1) count_true[1] = 0;;
+	if (count_false[0] >= ERR_C_CH + 1) count_false[0] = 0;
+	if (count_false[1] >= ERR_C_CH + 1) count_false[1] = 0;
 
 
 
