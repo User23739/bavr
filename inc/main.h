@@ -48,6 +48,8 @@
 #define REF_MAX 10
 #define REF_MIN -10
 #define ZIRO 0
+#define ZERO_MAX 10
+#define ZERO_MIN -10
 
 #define COUN_SINCH_ERR 20
 #define STOP_RELEY_TIMERS 10000

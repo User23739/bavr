@@ -4,7 +4,7 @@
 #include "main.h"
 
 #define SHIFT_ZERO 12
-#define CHANN 3
+#define CHANN 0
 
 //-------переменныеи и функции для тестов------------------------------------
 volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
@@ -34,6 +34,9 @@ short flag_zero[7] = {0};					// 0-"0"не найден; 1-"0" найден
 											// [4]-КАНАЛ В ФАЗА 2
 											// [5]-КАНАЛ В ФАЗА 3
 											// [6]-КАНАЛ С ФАЗА 1
+
+short zero_noise[7] = {0};					// 0 - нету дребезга; 1- дребезг;
+
 unsigned int rez_freg[7] = {0};				// переменная для частоты по всем каналам
 float rezult[7] = {0};						//переменная для хранения значений напряжения.
 
@@ -151,28 +154,61 @@ void ZeroDetect(float *vol){
 
 		static float after[7];
 		static float before[7];
+		int tmp_rez = 0;
 
 		for (int i = 0; i<7; i++){
 			before[i] = after[i];
 			after[i] = vol[i];
 
+			if ((after[i] < ZERO_MAX) && (after[i] > ZERO_MIN)){
+				flag_zero[i] += 1;
+				if(flag_zero[i] == 2){
+					zero_noise[i] = 1;
+				}
+
+			}
+			else{
+				flag_zero[i] = 0;
+				zero_noise[i] = 0;
+			}
+
 			if ((after[i] > 0) && (before[i] > 0)){
 				flag_mov_sin[i] = 1;
+				if(i == CHANN){
+					send_buffer_flag(777);
+					tmp_rez = before[i] - after[i];
+					send_buffer_flag(tmp_rez);
+				}
 				//count_posit_point[i]++;
 				//count_nigativ_point[i] = 0;
 			}
 			else if ((after[i] < 0) && (before[i] > 0)){
 				flag_mov_sin[i] = 0;
+				if(i == CHANN){
+					send_buffer_flag(6999);
+					tmp_rez = before[i] - after[i];
+					send_buffer_flag(tmp_rez);
+				}
 				//count_nigativ_point[i]++;
 				//count_posit_point[i] = 0;
 			}
 			else if ((after[i] < 0) && (before[i] < 0)){
 				flag_mov_sin[i] = 0;
+				if(i == CHANN){
+					send_buffer_flag(999);
+					tmp_rez = after[i] - before[i];
+					send_buffer_flag(tmp_rez);
+				}
 				//count_nigativ_point[i]++;
 				//count_posit_point[i] = 0;
 			}
 			else if ((after[i] > 0) && (before[i] < 0)){
 				flag_mov_sin[i]= 1;
+				if(i == CHANN){
+					send_buffer_flag(6777);
+					tmp_rez = after[i] - before[i];
+					send_buffer_flag(tmp_rez);
+				}
 				//count_posit_point[i]++;
 				//count_nigativ_point[i] = 0;
 			}
@@ -268,9 +304,9 @@ void SinCompar(float *vol, float shift){
 			k[i] = count_nigativ_point[i];
 			if (((SIN_A_ref[k[i]]-shift) < vol[i]) && ((SIN_A_ref[k[i]]+shift) > vol[i])){
 				flag_channel_posit[i] = 1;
-				if(i == CHANN){
+				/*if(i == CHANN){
 					send_buffer_flag(k[i]);
-				}
+				}*/
 			}
 			else{
 				flag_channel_posit[i] = 0;
@@ -285,7 +321,7 @@ void SinCompar(float *vol, float shift){
 
 			//нужно добавить преверку на ноль
 
-				if ((flag_channel_posit[i]) || (flag_channel_negat[i])){
+				if (((flag_channel_posit[i]) || (flag_channel_negat[i])) && (!zero_noise[i])){
 					flag_channel[i] = 1;
 				}
 				else{
@@ -310,7 +346,7 @@ void SinCompar(float *vol, float shift){
 
 				//нужно добавить преверку на ноль
 
-					if ((flag_channel_posit[i]) || (flag_channel_negat[i])){
+					if (((flag_channel_posit[i]) || (flag_channel_negat[i])) && (!zero_noise[i])){
 						flag_channel[i] = 1;
 					}
 					else{
@@ -337,8 +373,9 @@ void Control(){
 	Freq();
 	TrueRMS(&real_tmp_chan[0]);
 	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
+	ButControl();
 	ChannelStatus();								//Опрос состояния каналов
-	//SwitchChannel();								//Управление переключениями каналов
+	SwitchChannel();								//Управление переключениями каналов
 
 	for (int i=0; i<7; i++){
 		tru_rms[i] = rezult[i];

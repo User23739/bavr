@@ -104,11 +104,11 @@ void InitKey(void){
 void ChannelAON(void){
 		/*Включаемм транзисторы */
 		//1
-		GPIO_SetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
+	//	GPIO_SetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
 		//2
-		GPIO_SetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
+	//	GPIO_SetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
 		//3
-		GPIO_SetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
+	//	GPIO_SetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
 		flag_aktiv_channel = 1;
 
 	/*Включаем реле*/
@@ -130,11 +130,11 @@ void ChannelAON(void){
 void ChannelBON(void){
 		/*Включаемм транзисторы */
 		//4
-		GPIO_SetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
+	//	GPIO_SetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
 		//5
-		GPIO_SetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
+	//	GPIO_SetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
 		//6
-		GPIO_SetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
+	//	GPIO_SetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
 		flag_aktiv_channel = 2;
 
 
@@ -156,11 +156,11 @@ void ChannelBON(void){
 void ChannelAOFF(void){
 		/*Отключаем транзисторы */
 		//1
-		GPIO_ResetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
+	//	GPIO_ResetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
 		//2
-		GPIO_ResetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
+	//	GPIO_ResetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
 		//3
-		GPIO_ResetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
+	//	GPIO_ResetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
 		/*Отключаем 1  реле */
 		GPIO_ResetBits(RELAY_1_PORT_ON, RELAY_1_PIN_ON);
 		GPIO_SetBits(RELAY_1_PORT_OFF, RELAY_1_PIN_OFF);
@@ -183,11 +183,11 @@ void ChannelAOFF(void){
 void ChannelBOFF(void){
 	/*Отключаем транзисторы */
 	//4
-	GPIO_ResetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
+//	GPIO_ResetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
 	//5
-	GPIO_ResetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
+//	GPIO_ResetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
 	//6
-	GPIO_ResetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
+//	GPIO_ResetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
 	/*Отключаем 4  реле */
 	GPIO_ResetBits(RELAY_4_PORT_ON, RELAY_4_PIN_ON);
 	GPIO_SetBits(RELAY_4_PORT_OFF, RELAY_4_PIN_OFF);
