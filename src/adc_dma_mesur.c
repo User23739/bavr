@@ -28,7 +28,7 @@ void ADC_DMA_Init( void )
     DMA_InitStructure.DMA_Priority              = DMA_Priority_High;
     DMA_InitStructure.DMA_FIFOMode              = DMA_FIFOMode_Disable;
     DMA_InitStructure.DMA_FIFOThreshold         = DMA_PeripheralDataSize_Word;
-    DMA_InitStructure.DMA_PeripheralDataSize    = DMA_PeripheralDataSize_HalfWord;
+    DMA_InitStructure.DMA_PeripheralDataSize    = DMA_PeripheralDataSize_Word;
     DMA_InitStructure.DMA_MemoryBurst           = DMA_MemoryBurst_Single;
 	DMA_InitStructure.DMA_PeripheralBurst       = DMA_PeripheralBurst_Single;
 	DMA_Init(DMA2_Stream0, &DMA_InitStructure);

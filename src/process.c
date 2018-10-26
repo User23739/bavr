@@ -10,7 +10,7 @@
 extern uint32_t ADCBuffer[]; //переменная значений из АЦП
 extern short int flag_channel[];
 extern short flag_priori_chann_manual;	//переменная приоритека танала
-short flag_status_chann[7] = {0};				// состояние канала А;  0 - канал не в норме, 1 - канал в норм.
+short flag_status_chann[CHANN_W] = {0};				// состояние канала А;  0 - канал не в норме, 1 - канал в норм.
 short status_chann_A = 0;		    		// 0 - откл; 1 - вкл
 short status_chann_B = 0;		    		// 0 - откл; 1 - вкл
 extern short flag_aktiv_channel;
@@ -19,7 +19,7 @@ extern short flag_sinch_ch;
 
 //переменные для хранения текущих значений измерения
 
- float real_tmp_chan[7] = {0}; // переменная куда помещаются измеренные данные
+ float real_tmp_chan[CHANN_W] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
 										// [0]-КАНАЛ А ФАЗА 1
 										// [1]-КАНАЛ А ФАЗА 2
@@ -32,7 +32,7 @@ extern short flag_sinch_ch;
 //Нормализация входных данных
 
 void TransInData(void){
-	for (int i=0; i<7; i++){
+	for (int i=0; i<CHANN_W; i++){
 		real_tmp_chan[i] = roundl(((float)ADCBuffer[i] - REF_ZIRO)*U_QUANTUM);
 		}
 
@@ -86,7 +86,7 @@ void ChannelStatus(void){
 	static int count_false[2];
 	//count_work++;
 
-	for (int i=0; i<7; i++){
+	for (int i=0; i<CHANN_W; i++){
 		switch (flag_channel[i]){
 			case 0:
 				flag_status_chann[i] = 0;

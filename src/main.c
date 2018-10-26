@@ -8,7 +8,7 @@
 
 //-------переменныеи и функции для тестов------------------------------------
 volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
-extern float real_tmp_chan[7];
+extern float real_tmp_chan[CHANN_W];
 
 
 
@@ -17,16 +17,16 @@ extern float real_tmp_chan[7];
 				// 1 - канал А; 0 - оба выключенны; 2 - канал В.
 
 
-short flag_mov_sin[7] = {0};						    // 1 -положительная полуволна, 0 -отрицательная полуволна
-int count_posit_point[7] = {0};
-int count_nigativ_point[7] = {0};
+short flag_mov_sin[CHANN_W] = {0};						    // 1 -положительная полуволна, 0 -отрицательная полуволна
+int count_posit_point[CHANN_W] = {0};
+int count_nigativ_point[CHANN_W] = {0};
 
 
 short flag_sinch_ch = 0;  	 //флаг синхронности каналов
 							 //0-не синхронны
 							 //1-синхронны
 
-short flag_zero[7] = {0};					// 0-"0"не найден; 1-"0" найден
+short flag_zero[CHANN_W] = {0};					// 0-"0"не найден; 1-"0" найден
 											//// [0]-КАНАЛ А ФАЗА 1
 											// [1]-КАНАЛ А ФАЗА 2
 											// [2]-КАНАЛ А ФАЗА 3
@@ -35,10 +35,10 @@ short flag_zero[7] = {0};					// 0-"0"не найден; 1-"0" найден
 											// [5]-КАНАЛ В ФАЗА 3
 											// [6]-КАНАЛ С ФАЗА 1
 
-short zero_noise[7] = {0};					// 0 - нету дребезга; 1- дребезг;
+short zero_noise[CHANN_W] = {0};					// 0 - нету дребезга; 1- дребезг;
 
-unsigned int rez_freg[7] = {0};				// переменная для частоты по всем каналам
-float rezult[7] = {0};						//переменная для хранения значений напряжения.
+unsigned int rez_freg[CHANN_W] = {0};				// переменная для частоты по всем каналам
+float rezult_true_rms[CHANN_W] = {0};						//переменная для хранения значений напряжения.
 
 
 
@@ -67,7 +67,7 @@ float shift20 = 68;   //	должно 48
 
 
 //short int flag_channel_A[3]={0};
-short int flag_channel[7] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
+short int flag_channel[CHANN_W] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
 										//[1] - флаг состояния AB
 										//[2] - флаг состояния AC
 										//[0] - флаг состояния BА   0 - синусоида не в норме; 1 - синусоида в норме;
@@ -75,7 +75,7 @@ short int flag_channel[7] = {0};		//[0] - флаг состояния АА  0 - синусоида не в 
 										//[2] - флаг состояния BC
 										//[0] - флаг состояния CA
 
-short int flag_channel_posit[7] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
+short int flag_channel_posit[CHANN_W] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
 										//[1] - флаг состояния AB
 										//[2] - флаг состояния AC
 										//[0] - флаг состояния BА   0 - синусоида не в норме; 1 - синусоида в норме;
@@ -83,7 +83,7 @@ short int flag_channel_posit[7] = {0};		//[0] - флаг состояния АА  0 - синусоида
 										//[2] - флаг состояния BC
 										//[0] - флаг состояния CA
 
-short int flag_channel_negat[7] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
+short int flag_channel_negat[CHANN_W] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
 										//[1] - флаг состояния AB
 										//[2] - флаг состояния AC
 										//[0] - флаг состояния BА   0 - синусоида не в норме; 1 - синусоида в норме;
@@ -91,7 +91,7 @@ short int flag_channel_negat[7] = {0};		//[0] - флаг состояния АА  0 - синусоида
 										//[2] - флаг состояния BC
 										//[0] - флаг состояния CA
 
-int  count_point[7] = {0};						//счетчик отчетов
+int  count_point[CHANN_W] = {0};						//счетчик отчетов
 
 
 //-------------------------
@@ -106,7 +106,7 @@ short buff_flag_[1000] = {0};
 int a11 = 0;
 
 
-
+/*Функции для тестов */
 void send_buffer_flag(short *vol){
 
 	if(a11 >= 1001 ) a11 = 0;
@@ -115,6 +115,8 @@ void send_buffer_flag(short *vol){
 
 
 }
+
+/*генератор синусоиды*/
 
 
 
@@ -152,11 +154,11 @@ void USARTSend(const unsigned char *pucBuffer){
 
 void ZeroDetect(float *vol){
 
-		static float after[7];
-		static float before[7];
+		static float after[CHANN_W];
+		static float before[CHANN_W];
 		int tmp_rez = 0;
 
-		for (int i = 0; i<7; i++){
+		for (int i = 0; i<CHANN_W; i++){
 			before[i] = after[i];
 			after[i] = vol[i];
 
@@ -247,58 +249,74 @@ void ZeroDetect(float *vol){
 
 /*Функция расчета частоты*/
  void Freq(){
-	static unsigned int afterGT[7];
-	static unsigned int beforeGT[7];
-	//static unsigned int rez_freg[7];
 
-	for (int i = 0; i<7; i++){
-		if (flag_zero[i]){
-			beforeGT[i] = afterGT[i];
-			afterGT[i] = GetGTimer(GTIMER6 + i);
-			rez_freg[i] =(1/(afterGT[i] - beforeGT[i])*250)/2;
-		}
-	}
 
 }
 
 
 /*Функция расчета среднеквадратичного значения*/
 void TrueRMS(float *vol){
-	static float var_sum[7];
-	//static float rezult[7] = {0};
-	static int N[7];
-	float var[7] = {0};
+static float var_sum_p[CHANN_W];
+static float var_sum_n[CHANN_W];
+static int Np[CHANN_W];
+static int Nn[CHANN_W];
+float var[CHANN_W] = {0};
 
-	for (int i=0; i<7; i++){
-		if(!flag_zero[i]){
-			N[i]++;
+	for (int i=0; i<CHANN_W; i++){
+		if(flag_mov_sin[i]){
+			if(Nn[i]>=39){
+				rezult_true_rms[i] =roundl(sqrt(var_sum_n[i]/Nn[i]));
+				Nn[i] = 0;
+				var_sum_n[i] = 0;
+			}
+			Np[i]++;
 			var[i] = vol[i];
-			var_sum[i] +=var[i]*var[i];
+			var_sum_p[i] +=var[i]*var[i];
 		}
-		else{ rezult[i] =sqrt(var_sum[i]/N[i]);
-			N[i] = 0;
+		else{
+			if(Np[i]>=39){
+				rezult_true_rms[i] =roundl(sqrt(var_sum_p[i]/Np[i]));
+				Np[i] = 0;
+				var_sum_p[i] = 0;
+			}
+			Nn[i]++;
+			var[i] = vol[i];
+			var_sum_n[i] +=var[i]*var[i];
+
 		}
 	}
 
-
 }
 
+/*Функция определения синхронности каналов*/
+void SinChanAB(float *vol){
+float data_chan[CHANN_W] = {0};
+for (int i=0; i<CHANN_W; i++){
+	data_chan[i] = vol[i];
+		}
+	if (flag_mov_sin[0] == flag_mov_sin[3]){
+		if (flag_mov_sin[1] == flag_mov_sin[4]){
+			if (flag_mov_sin[2] == flag_mov_sin[5]){
 
+			}
+		}
+	}
+}
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
 /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
 
 void SinCompar(float *vol, float shift){
 
-	static int k[7];
+	static int k[CHANN_W];
 
 
-	for (int i=0; i<7; i++){
+	for (int i=0; i<CHANN_W; i++){
 		flag_channel_posit[i] = 0;
 		flag_channel_negat[i] = 0;
 	}
 
 
-	for (int i=0; i<7; i++){
+	for (int i=0; i<CHANN_W; i++){
 		switch(flag_mov_sin[i]){
 		case 0:
 			k[i] = count_nigativ_point[i];
@@ -363,8 +381,6 @@ void SinCompar(float *vol, float shift){
 
 /*Функция контроллер*/
 void Control(){
-	static float tru_rms[7];
-	static unsigned int freg[7];
 
 
 	TransInData();									//преобразование данных в удобный вид// функция работает правильно
@@ -377,10 +393,7 @@ void Control(){
 	ChannelStatus();								//Опрос состояния каналов
 	SwitchChannel();								//Управление переключениями каналов
 
-	for (int i=0; i<7; i++){
-		tru_rms[i] = rezult[i];
-		freg[i] = rez_freg[i];
-		}
+
 
 }
 
