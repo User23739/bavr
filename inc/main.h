@@ -55,6 +55,9 @@ void SinCompar(float *vol, float shift);
 void ZeroDetect(float *vol);
 void TrueRMS(float *vol);
 void Freq();
+void GenSin(void);
+void TransData(void);
+
 
 
 

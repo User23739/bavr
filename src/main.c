@@ -10,6 +10,7 @@
 #define COUN_SINCH_ERR 20
 #define COUNT_END 10000
 #define MEG_POINT 41
+#define QUANT_POINT 0.00025
 
 
 
@@ -105,13 +106,28 @@ int  count_point[CHANN_W] = {0};						//счетчик отчетов
 short buff_flag_[1000] = {0};
 
 
-//int c_out = 0;
+
+
+
+
+/*Функции для тестов */
+
+//переменная для хранения значений генератора
+float gen_data[CHANN_W] = {0}; // переменная куда помещаются измеренные данные
+										// с АЦП
+										// [0]-КАНАЛ А ФАЗА 1
+										// [1]-КАНАЛ А ФАЗА 2
+										// [2]-КАНАЛ А ФАЗА 3
+										// [3]-КАНАЛ В ФАЗА 1
+										// [4]-КАНАЛ В ФАЗА 2
+										// [5]-КАНАЛ В ФАЗА 3
+										// [6]-КАНАЛ С ФАЗА 1
+
 
 //указатель кольцевого буфера
 int a11 = 0;
 
 
-/*Функции для тестов */
 void send_buffer_flag(short *vol){
 
 	if(a11 >= 1001 ) a11 = 0;
@@ -122,7 +138,36 @@ void send_buffer_flag(short *vol){
 }
 
 /*генератор синусоиды*/
+void GenSin(void){
+	static float time_point[CHANN_W];	//для хранения отсчетов времени
+	float ampl_U = 336;    	//апмплитудное напряжение сетевого напряжения
+	float angul_vel = 314.1592654; 	//значение по умолчанию
+	float period = 0.02; 			//значение периода сетевого напряжения
+	float pi = 3.1415926535;
 
+	angul_vel =(2*pi)/period;
+
+	//обнуление таймера периода, генератор таймера
+	for (int i = 0; i<CHANN_W; i++){
+		if(time_point[i] == 1.975) time_point[i] = 0;
+	}
+
+	//генератор 3-фазной синусоиды
+	for (int i = 0; i<CHANN_W; i++){
+		if((i==0) || (i==3)) gen_data[i] = ampl_U*sin(angul_vel*time_point[i]); //фаза А
+		if((i==1) || (i==4)) gen_data[i] = ampl_U*sin((angul_vel*time_point[i])+4.1887); //Фаза В
+		if((i==2) || (i==5)) gen_data[i] = ampl_U*sin((angul_vel*time_point[i])+2.094); //фаза С
+		time_point[i] += QUANT_POINT;
+		}
+}
+
+
+void TransData(void){
+
+	for (int i = 0; i<CHANN_W; i++){
+		real_tmp_chan[i] = gen_data[i];
+	}
+}
 
 
 void TIM4_IRQHandler(void){
@@ -404,13 +449,16 @@ void SinCompar(float *vol, float shift){
 void Control(){
 
 
-	TransInData();									//преобразование данных в удобный вид// функция работает правильно
+	//TransInData();									//преобразование данных в удобный вид// функция работает правильно
+	//------------------функции для теста, перед их включением необходимо закоментировать функции: ADC_DMA_Init();// TransInData();
+	GenSin();
+	TransData();
+	//----------------------------------------
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер//функция работает бравильно
 	ZeroDetect(&real_tmp_chan[0]);
 	Freq();
 	TrueRMS(&real_tmp_chan[0]);
 	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
-	ButControl();
 	ChannelStatus();								//Опрос состояния каналов
 	SwitchChannel();								//Управление переключениями каналов
 
@@ -427,9 +475,9 @@ int main(void){
 
 	SYSTEM_Init();
 	RELAY_Init();
-	ADC_DMA_Init();
+	//ADC_DMA_Init();
 	TIMER_Init();
-	RS232_Init();
+	//RS232_Init();
 	InitGPIO();
 	InitGTimers();  // инициализируем глобальные таймеры
 	InitKey();		//инициализация каналов переключения (отключение)
