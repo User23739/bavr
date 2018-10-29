@@ -1,14 +1,14 @@
 /**
   ******************************************************************************
-  * @file      startup_stm32.s dedicated to STM32F207VCTx device
+  * @file      startup_stm32.s dedicated to STM32F429ZITx device
   * @author    Ac6
   * @version   V1.0.0
-  * @date      2018-07-27
+  * @date      2018-10-29
   ******************************************************************************
   */
 
 .syntax unified
-.cpu cortex-m3
+.cpu cortex-m4
 .fpu softvfp
 .thumb
 
@@ -102,7 +102,7 @@ Infinite_Loop:
   .size Default_Handler, .-Default_Handler
 /******************************************************************************
 *
-* The STM32F207VCTx vector table.  Note that the proper constructs
+* The STM32F429ZITx vector table.  Note that the proper constructs
 * must be placed on this to ensure that it ends up at physical address
 * 0x0000.0000.
 *
@@ -133,7 +133,7 @@ g_pfnVectors:
   .word	PVD_IRQHandler               			/* PVD through EXTI line detection interrupt                          */
   .word	TAMP_STAMP_IRQHandler        			/* Tamper and TimeStamp interrupts through the EXTI line              */
   .word	RTC_WKUP_IRQHandler          			/* RTC Wakeup interrupt through the EXTI line                         */
-  .word	FLASH_IRQHandler             			/* FlASH global interrupt                                             */
+  .word	FLASH_IRQHandler             			/* Flash global interrupt                                             */
   .word	RCC_IRQHandler               			/* RCC global interrupt                                               */
   .word	EXTI0_IRQHandler             			/* EXTI Line0 interrupt                                               */
   .word	EXTI1_IRQHandler             			/* EXTI Line1 interrupt                                               */
@@ -147,7 +147,7 @@ g_pfnVectors:
   .word	DMA1_Stream4_IRQHandler      			/* DMA1 Stream4 global interrupt                                      */
   .word	DMA1_Stream5_IRQHandler      			/* DMA1 Stream5 global interrupt                                      */
   .word	DMA1_Stream6_IRQHandler      			/* DMA1 Stream6 global interrupt                                      */
-  .word	ADC_IRQHandler               			/* ADC3 global interrupts                                             */
+  .word	ADC_IRQHandler               			/* ADC2 global interrupts                                             */
   .word	CAN1_TX_IRQHandler           			/* CAN1 TX interrupts                                                 */
   .word	CAN1_RX0_IRQHandler          			/* CAN1 RX0 interrupts                                                */
   .word	CAN1_RX1_IRQHandler          			/* CAN1 RX1 interrupts                                                */
@@ -177,7 +177,7 @@ g_pfnVectors:
   .word	TIM8_TRG_COM_TIM14_IRQHandler			/* TIM8 Trigger and Commutation interrupts and TIM14 global interrupt */
   .word	TIM8_CC_IRQHandler           			/* TIM8 Capture Compare interrupt                                     */
   .word	DMA1_Stream7_IRQHandler      			/* DMA1 Stream7 global interrupt                                      */
-  .word	FSMC_IRQHandler              			/* FSMC global interrupt                                              */
+  .word	FMC_IRQHandler               			/* FMC global interrupt                                               */
   .word	SDIO_IRQHandler              			/* SDIO global interrupt                                              */
   .word	TIM5_IRQHandler              			/* TIM5 global interrupt                                              */
   .word	SPI3_IRQHandler              			/* SPI3 global interrupt                                              */
@@ -210,6 +210,16 @@ g_pfnVectors:
   .word	DCMI_IRQHandler              			/* DCMI global interrupt                                              */
   .word	CRYP_IRQHandler              			/* CRYP crypto global interrupt                                       */
   .word	HASH_RNG_IRQHandler          			/* Hash and Rng global interrupt                                      */
+  .word	FPU_IRQHandler               			/* Floating point interrupt                                           */
+  .word	UART7_IRQHandler             			/* UART 7 global interrupt                                            */
+  .word	UART8_IRQHandler             			/* UART 8 global interrupt                                            */
+  .word	SPI4_IRQHandler              			/* SPI 4 global interrupt                                             */
+  .word	SPI5_IRQHandler              			/* SPI 5 global interrupt                                             */
+  .word	SPI6_IRQHandler              			/* SPI 6 global interrupt                                             */
+  .word	SAI1_IRQHandler              			/* SAI1 global interrupt                                              */
+  .word	LCD_TFT_IRQHandler           			/* LTDC global interrupt                                              */
+  .word	LCD_TFT_1_IRQHandler         			/* LTDC global error interrupt                                        */
+  .word	DMA2D_IRQHandler             			/* DMA2D global interrupt                                             */
 
 /*******************************************************************************
 *
@@ -390,8 +400,8 @@ g_pfnVectors:
 	.weak	DMA1_Stream7_IRQHandler
 	.thumb_set DMA1_Stream7_IRQHandler,Default_Handler
 	
-	.weak	FSMC_IRQHandler
-	.thumb_set FSMC_IRQHandler,Default_Handler
+	.weak	FMC_IRQHandler
+	.thumb_set FMC_IRQHandler,Default_Handler
 	
 	.weak	SDIO_IRQHandler
 	.thumb_set SDIO_IRQHandler,Default_Handler
@@ -488,6 +498,36 @@ g_pfnVectors:
 	
 	.weak	HASH_RNG_IRQHandler
 	.thumb_set HASH_RNG_IRQHandler,Default_Handler
+	
+	.weak	FPU_IRQHandler
+	.thumb_set FPU_IRQHandler,Default_Handler
+	
+	.weak	UART7_IRQHandler
+	.thumb_set UART7_IRQHandler,Default_Handler
+	
+	.weak	UART8_IRQHandler
+	.thumb_set UART8_IRQHandler,Default_Handler
+	
+	.weak	SPI4_IRQHandler
+	.thumb_set SPI4_IRQHandler,Default_Handler
+	
+	.weak	SPI5_IRQHandler
+	.thumb_set SPI5_IRQHandler,Default_Handler
+	
+	.weak	SPI6_IRQHandler
+	.thumb_set SPI6_IRQHandler,Default_Handler
+	
+	.weak	SAI1_IRQHandler
+	.thumb_set SAI1_IRQHandler,Default_Handler
+	
+	.weak	LCD_TFT_IRQHandler
+	.thumb_set LCD_TFT_IRQHandler,Default_Handler
+	
+	.weak	LCD_TFT_1_IRQHandler
+	.thumb_set LCD_TFT_1_IRQHandler,Default_Handler
+	
+	.weak	DMA2D_IRQHandler
+	.thumb_set DMA2D_IRQHandler,Default_Handler
 	
 	.weak	SystemInit
 

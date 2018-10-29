@@ -6,7 +6,10 @@ StdPeriph_Driver/
 .cproject
 .project
 .gitignore
-bavr_my_not_frtos Run.cfg
-bavr_my_not_frtos Debug.cfg
+inc/spl.h
+inc/stm32f4xx_it.h
+src/system_stm32f4xx.c
+f429_bavr Run.cfg
+f429_bavr Debug.cfg
 LinkerScript.ld
 problems.txt
