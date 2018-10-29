@@ -248,10 +248,26 @@ void ZeroDetect(float *vol){
 }
 
 /*Функция расчета частоты*/
- void Freq(){
+void Freq(){
+
+	for (int i = 0; i<CHANN_W; i++){
+		if (flag_mov_sin[0]){
+			StartGTimer(GTIMER3 + i);
+			rez_freg[i] = (1/((float)GetGTimer(GTIMER9 + i)*0.00025))/2;
+			StopGTimer(GTIMER9 + i);
+		}
+		else{
+			StartGTimer(GTIMER9 + i);
+			rez_freg[i] = (1/((float)GetGTimer(GTIMER3 + i)*0.00025))/2;
+			StopGTimer(GTIMER3 + i);
+
+		}
+
+	}
 
 
 }
+
 
 
 /*Функция расчета среднеквадратичного значения*/

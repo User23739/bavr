@@ -29,7 +29,7 @@ void StartGTimer(unsigned int GTimerID){   //Запуск таймера
 }
 
 void StopGTimer(unsigned int GTimerID){		//Остановка таймера
-	GTimers[GTimerID] = TIMER_STOPPED;
+	GTStates[GTimerID] = TIMER_STOPPED;
 }
 
 unsigned int GetGTimer(unsigned int GTimerID){   //Получение текущего значения таймера
