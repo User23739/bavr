@@ -8,8 +8,11 @@ StdPeriph_Driver/
 .gitignore
 inc/spl.h
 inc/stm32f4xx_it.h
+startup/
 src/system_stm32f4xx.c
 f429_bavr Run.cfg
 f429_bavr Debug.cfg
+bavr_my_not_frtos Run.cfg
+bavr_my_not_frtos Debug.cfg
 LinkerScript.ld
 problems.txt

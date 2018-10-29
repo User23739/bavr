@@ -9,15 +9,15 @@
 #define SPL_H_
 
 /*----CMSIS è SPL----------*/
-#include "stm32f4xx_conf.h"
-#include "stm32f4xx.h"
-#include "stm32f4xx_it.h"
-#include "stm32f4xx_gpio.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_adc.h"
-#include "stm32f4xx_dma.h"
-#include "stm32f4xx_usart.h"
-#include "stm32f4xx_tim.h"
+#include "stm32f2xx_conf.h"
+#include "stm32f2xx.h"
+#include "stm32f2xx_it.h"
+#include "stm32f2xx_gpio.h"
+#include "stm32f2xx_rcc.h"
+#include "stm32f2xx_adc.h"
+#include "stm32f2xx_dma.h"
+#include "stm32f2xx_usart.h"
+#include "stm32f2xx_tim.h"
 
 
 #endif /* SPL_H_ */
