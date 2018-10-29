@@ -2,9 +2,16 @@
 /*-----Инклуды--------- */
 
 #include "main.h"
+/*-----Локальные константы------*/
 
-#define SHIFT_ZERO 12
 #define CHANN 0
+#define ZERO_MAX 10
+#define ZERO_MIN -10
+#define COUN_SINCH_ERR 20
+#define COUNT_END 10000
+#define MEG_POINT 41
+
+
 
 //-------переменныеи и функции для тестов------------------------------------
 volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
@@ -37,7 +44,7 @@ short flag_zero[CHANN_W] = {0};					// 0-"0"не найден; 1-"0" найден
 
 short zero_noise[CHANN_W] = {0};					// 0 - нету дребезга; 1- дребезг;
 
-unsigned int rez_freg[CHANN_W] = {0};				// переменная для частоты по всем каналам
+float rez_freg[CHANN_W] = {0};				// переменная для частоты по всем каналам
 float rezult_true_rms[CHANN_W] = {0};						//переменная для хранения значений напряжения.
 
 
@@ -59,14 +66,11 @@ float SIN_A_ref[] = {27, 53, 79, 104, 129, 153, 176, 198, 219, 238, 256,
 
 //переменные допуска по синусоиде 10%, 15%, 20%
 
-float shift10 = 24;
-float shift15 = 36;
-float shift20 = 68;   //	должно 48
-
-//float shift = 0;
+float shift10 = 34;
+float shift15 = 51;
+float shift20 = 68;
 
 
-//short int flag_channel_A[3]={0};
 short int flag_channel[CHANN_W] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
 										//[1] - флаг состояния AB
 										//[2] - флаг состояния AC
@@ -96,6 +100,7 @@ int  count_point[CHANN_W] = {0};						//счетчик отчетов
 
 //-------------------------
 /*тестовый буфер флагов */
+
 // буфер кольцево для хранения данных измерения
 short buff_flag_[1000] = {0};
 

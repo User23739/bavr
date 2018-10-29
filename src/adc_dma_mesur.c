@@ -1,9 +1,9 @@
 #include "main.h"
 
 
-//volatile uint16_t ADCBuffer[7] = {0};
+/*---Глобальная переменная---- */
  uint32_t ADCBuffer[7] = {0};
- //uint32_t *uk = ADCBuffer;
+
 
 
 

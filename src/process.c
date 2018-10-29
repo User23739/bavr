@@ -17,6 +17,17 @@ extern short flag_aktiv_channel;
 extern short flag_sinch_ch;
 //extern short flag_gen_ban;
 
+
+
+/*-----Локальные константы-----*/
+#define REF_ZIRO 2048      //значение 0 в абсолютных данных
+#define U_QUANTUM 0.25513    //значение 1 кванта в вольтах
+#define AVER_N 2			//значение усреднения
+
+#define ERR_C_CH 20  	//колличество допустимых ощибок на канал
+#define TRU_C_CH 160     //колличсество положительных отсчетов для включения
+
+
 //переменные для хранения текущих значений измерения
 
  float real_tmp_chan[CHANN_W] = {0}; // переменная куда помещаются измеренные данные

@@ -17,7 +17,7 @@
 //#include <math.h">
 
 /*----CMSIS и SPL----------*/
-#include "stm32f2xx_conf.h"
+/*#include "stm32f2xx_conf.h"
 #include "stm32f2xx.h"
 #include "stm32f2xx_it.h"
 #include "stm32f2xx_gpio.h"
@@ -26,7 +26,7 @@
 #include "stm32f2xx_dma.h"
 #include "stm32f2xx_usart.h"
 #include "stm32f2xx_tim.h"
-
+*/
 /*----Логика----------*/
 #include "system.h"
 #include "relay.h"
@@ -37,25 +37,15 @@
 #include "relay.h"
 #include "process.h"
 #include "gpio.h"
+#include "spl.h"
+
+/*----Глобальные константы-------*/
+#define CHANN_W 6  						//количество рабочих каналов
+#define KEY_DELAY 60 				 	//задержка на включение ключей
+#define STOP_RELEY_TIMERS 10000			//защита от переполнения таймеров
 
 
 
-
-
-#define KEY_DELAY 60
-#define TRUE_STEP 2
-
-#define REF_MAX 10
-#define REF_MIN -10
-#define ZIRO 0
-#define ZERO_MAX 10
-#define ZERO_MIN -10
-
-#define COUN_SINCH_ERR 20
-#define STOP_RELEY_TIMERS 10000
-#define COUNT_END 10000
-#define MEG_POINT 41
-#define CHANN_W 6  //количество рабочих каналов
 
 
 //Сигнатуры функций

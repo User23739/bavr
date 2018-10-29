@@ -4,11 +4,9 @@
 
 //инизиализация
 
-//extern short flag_switch_A;		    		// 0 - вкл; 1 - откл
 //extern short flag_switch_B;
-
+/*----Глобальные переменные------------*/
 short flag_aktiv_channel = 0;				// 0-оба откл; 1-вкл А; 2-вкл В;
-//short flag_gen_ban = 0;						//0-общий запрет на включение; 1-общее разрещение на включение
 
 
 void RELAY_Init( void ){
