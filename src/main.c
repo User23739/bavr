@@ -11,6 +11,7 @@
 #define COUNT_END 10000
 #define MEG_POINT 41
 #define QUANT_POINT 0.00025
+#define SHIFT_PHASE_ROT 20
 
 
 
@@ -33,6 +34,11 @@ int count_nigativ_point[CHANN_W] = {0};
 short flag_sinch_ch = 0;  	 //флаг синхронности каналов
 							 //0-не синхронны
 							 //1-синхронны
+
+
+short flag_phase_rot = 0;  	 //фла прямого чередования фаз
+							 //0-ошибка чередования
+							 //1-правильное чередование
 
 short flag_zero[CHANN_W] = {0};					// 0-"0"не найден; 1-"0" найден
 											//// [0]-КАНАЛ А ФАЗА 1
@@ -368,6 +374,38 @@ for (int i=0; i<CHANN_W; i++){
 		}
 	}
 }
+
+/*Функция определения чередования фаз */
+void PhaseRot(float *vol){
+	float data_chan[CHANN_W] = {0};
+	short flag_phase[3] = {0};
+	for (int i=0; i<CHANN_W; i++){
+		data_chan[i] = vol[i];
+			}
+	if (((data_chan[0] + SHIFT_PHASE_ROT) >= data_chan[3]) && ((data_chan[0] - SHIFT_PHASE_ROT) <= data_chan[3])){
+		flag_phase[0] = 1;
+	}
+	else{
+		flag_phase[0] = 0;
+	}
+	if (((data_chan[1] + SHIFT_PHASE_ROT) >= data_chan[4]) && ((data_chan[1] - SHIFT_PHASE_ROT) <= data_chan[4])){
+		flag_phase[0] = 1;
+	}
+	else{
+		flag_phase[0] = 0;
+	}
+	if (((data_chan[2] + SHIFT_PHASE_ROT) >= data_chan[5]) && ((data_chan[2] - SHIFT_PHASE_ROT) <= data_chan[5])){
+		flag_phase[0] = 1;
+	}
+	else{
+		flag_phase[0] = 0;
+	}
+
+
+
+	flag_phase_rot;
+}
+
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
 /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
 
@@ -403,7 +441,7 @@ void SinCompar(float *vol, float shift){
 				flag_channel_negat[i] = 0;
 				}
 
-			//нужно добавить преверку на ноль
+
 
 				if (((flag_channel_posit[i]) || (flag_channel_negat[i])) && (!zero_noise[i])){
 					flag_channel[i] = 1;
