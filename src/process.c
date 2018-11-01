@@ -7,7 +7,7 @@
 #include "main.h"
 
 
-extern uint32_t ADCBuffer[]; //переменная значений из АЦП
+extern uint16_t ADCBuffer[]; //переменная значений из АЦП
 extern short int flag_channel[];
 extern short flag_priori_chann_manual;	//переменная приоритека танала
 short flag_status_chann[CHANN_W] = {0};				// состояние канала А;  0 - канал не в норме, 1 - канал в норм.
@@ -21,7 +21,7 @@ extern short flag_sinch_ch;
 
 /*-----Локальные константы-----*/
 #define REF_ZIRO 2048      //значение 0 в абсолютных данных
-#define U_QUANTUM 0.25513    //значение 1 кванта в вольтах
+#define U_QUANTUM 0.35679742    //значение 1 кванта в вольтах
 #define AVER_N 2			//значение усреднения
 
 #define ERR_C_CH 20  	//колличество допустимых ощибок на канал
@@ -40,13 +40,57 @@ extern short flag_sinch_ch;
 										// [5]-КАНАЛ В ФАЗА 3
 										// [6]-КАНАЛ С ФАЗА 1
 
+ uint16_t  data_chan[CHANN_W] = {0}; // переменная куда помещаются измеренные данные
+ 										// с АЦП
+ 										// [0]-КАНАЛ А ФАЗА 1
+ 										// [1]-КАНАЛ А ФАЗА 2
+ 										// [2]-КАНАЛ А ФАЗА 3
+ 										// [3]-КАНАЛ В ФАЗА 1
+ 										// [4]-КАНАЛ В ФАЗА 2
+ 										// [5]-КАНАЛ В ФАЗА 3
+ 										// [6]-КАНАЛ С ФАЗА 1
+
 //Нормализация входных данных
 
 void TransInData(void){
 	for (int i=0; i<CHANN_W; i++){
-		real_tmp_chan[i] = roundl(((float)ADCBuffer[i] - REF_ZIRO)*U_QUANTUM);
+		if(ADCBuffer[i] >4096 ){
+			data_chan[i] = ADCBuffer[i] >> 4;
+		}
+		else{
+			data_chan[i] = ADCBuffer[i];
 		}
 
+		real_tmp_chan[i] = roundl(((float)data_chan[i] - REF_ZIRO)*U_QUANTUM);
+		}
+
+}
+
+uint16_t raw_data_chanA1[321] = {0};
+uint16_t raw_data_chanA2[321] = {0};
+uint16_t raw_data_chanA3[321] = {0};
+
+uint16_t raw_data_chanB1[321] = {0};
+uint16_t raw_data_chanB2[321] = {0};
+uint16_t raw_data_chanB3[321] = {0};
+
+int aa1 = 0;			//указатели буфера канала А
+int bb1 = 0;			//указатели буфера канала B
+
+
+
+void TransRawDataToBuffer(uint16_t *vol){
+
+		if(aa1 >= 320 ) aa1 = 0;
+		raw_data_chanA1[aa1] = vol[0];
+		raw_data_chanA2[aa1] = vol[1];
+		raw_data_chanA3[aa1] = vol[2];
+		aa1++;
+		if(bb1  >= 320) bb1 = 0;
+		raw_data_chanB1[bb1] = vol[3];
+		raw_data_chanB2[bb1] = vol[4];
+		raw_data_chanB3[bb1] = vol[5];
+		bb1++;
 }
 
 
@@ -95,6 +139,7 @@ void BuffData(float *vol){
 void ChannelStatus(void){
 	static int count_true[2];
 	static int count_false[2];
+	//static int count_work;
 	//count_work++;
 
 	for (int i=0; i<CHANN_W; i++){
@@ -114,21 +159,24 @@ void ChannelStatus(void){
 				break;
 		}
 	}
-	if ((flag_status_chann[0])/*&&(flag_status_chann[1])&&(flag_status_chann[2])*/){
+	if ((flag_status_chann[0])&&(flag_status_chann[1])&&(flag_status_chann[2])){
 
 		//status_chann_A = 1;
+		count_false[0] = 0;
 		count_true[0]++;
 
 		//send_buffer_flag(333);
 	}
 	else{
 		//status_chann_A = 0;
+
 		count_false[0]++;
 		//send_buffer_flag(444);
 	}
-	if ((flag_status_chann[3])/*&&(flag_status_chann[4])&&(flag_status_chann[5])*/){
-		status_chann_B = 1;
-		//count_true[1]++;
+	if ((flag_status_chann[3])&&(flag_status_chann[4])&&(flag_status_chann[5])){
+		//status_chann_B = 1;
+		count_false[1] = 0;
+		count_true[1]++;
 	}
 	else{
 		//status_chann_B = 0;
@@ -136,25 +184,20 @@ void ChannelStatus(void){
 	}
 
 
-	if (count_true[0]>= TRU_C_CH){
+	if (count_true[0]>= TRU_C_CH) status_chann_A = 1;
+	if (count_false[0]>=ERR_C_CH) status_chann_A = 0;
+	if (count_true[1]>= TRU_C_CH) status_chann_B = 1;
+	if (count_false[1]>=ERR_C_CH) status_chann_B = 0;
 
-		status_chann_A = 1;
-	}
-	else if (count_false[0]>=ERR_C_CH){
-		status_chann_A = 0;
-	}
-	if (count_true[1]>= TRU_C_CH){
-		status_chann_B = 1;
-	}
-	else if (count_false[1]>=ERR_C_CH){
-		status_chann_B = 0;
-	}
-	if (count_true[0] >= TRU_C_CH + 1 ) count_true[0] = 0;;
-	if (count_true[1] >= TRU_C_CH + 1) count_true[1] = 0;;
-	if (count_false[0] >= ERR_C_CH + 1) count_false[0] = 0;
-	if (count_false[1] >= ERR_C_CH + 1) count_false[1] = 0;
-
-
+	//if(count_work >=2){
+	if (count_false[0] >= ERR_C_CH + 5) count_false[0] = ERR_C_CH + 1;
+	if (count_false[1] >= ERR_C_CH + 5) count_false[1] = ERR_C_CH + 1;
+	//}
+	//else if(count_work >= 160){
+	if (count_true[0] >= TRU_C_CH + 5 ) count_true[0] = 0;
+	if (count_true[1] >= TRU_C_CH + 5) count_true[1] = 0;
+	//	count_work = 0;
+	//}
 
 
 }

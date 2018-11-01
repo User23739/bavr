@@ -15,6 +15,7 @@ void TransInData(void);
 void BuffData(float *vol);
 void ChannelStatus(void);
 void SwitchChannel(void);
+void TransRawDataToBuffer(uint16_t *vol);
 //void Aver(void);
 
 #endif /* PROCESS_H_ */

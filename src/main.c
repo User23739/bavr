@@ -4,9 +4,9 @@
 #include "main.h"
 /*-----Локальные константы------*/
 
-#define CHANN 0
-#define ZERO_MAX 10
-#define ZERO_MIN -10
+#define CHANN 3
+#define ZERO_MAX 13
+#define ZERO_MIN -13
 #define COUN_SINCH_ERR 20
 #define COUNT_END 10000
 #define MEG_POINT 41
@@ -15,9 +15,11 @@
 
 
 
-//-------переменныеи и функции для тестов------------------------------------
+//-------переменныеи------------------------------------
 volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
 extern float real_tmp_chan[CHANN_W];
+//extern uint16_t ADCBuffer[7];
+extern uint16_t  data_chan[CHANN_W];
 
 
 
@@ -234,8 +236,8 @@ void ZeroDetect(float *vol){
 				flag_mov_sin[i] = 1;
 				if(i == CHANN){
 					send_buffer_flag(777);
-					tmp_rez = before[i] - after[i];
-					send_buffer_flag(tmp_rez);
+					//tmp_rez = before[i] - after[i];
+					//send_buffer_flag(tmp_rez);
 				}
 				//count_posit_point[i]++;
 				//count_nigativ_point[i] = 0;
@@ -244,8 +246,8 @@ void ZeroDetect(float *vol){
 				flag_mov_sin[i] = 0;
 				if(i == CHANN){
 					send_buffer_flag(6999);
-					tmp_rez = before[i] - after[i];
-					send_buffer_flag(tmp_rez);
+					//tmp_rez = before[i] - after[i];
+					//send_buffer_flag(tmp_rez);
 				}
 				//count_nigativ_point[i]++;
 				//count_posit_point[i] = 0;
@@ -254,8 +256,8 @@ void ZeroDetect(float *vol){
 				flag_mov_sin[i] = 0;
 				if(i == CHANN){
 					send_buffer_flag(999);
-					tmp_rez = after[i] - before[i];
-					send_buffer_flag(tmp_rez);
+					//tmp_rez = after[i] - before[i];
+					//send_buffer_flag(tmp_rez);
 				}
 				//count_nigativ_point[i]++;
 				//count_posit_point[i] = 0;
@@ -264,8 +266,8 @@ void ZeroDetect(float *vol){
 				flag_mov_sin[i]= 1;
 				if(i == CHANN){
 					send_buffer_flag(6777);
-					tmp_rez = after[i] - before[i];
-					send_buffer_flag(tmp_rez);
+					//tmp_rez = after[i] - before[i];
+					//send_buffer_flag(tmp_rez);
 				}
 				//count_posit_point[i]++;
 				//count_nigativ_point[i] = 0;
@@ -316,12 +318,8 @@ void Freq(){
 			StartGTimer(GTIMER9 + i);
 			rez_freg[i] = (1/((float)GetGTimer(GTIMER3 + i)*0.00025))/2;
 			StopGTimer(GTIMER3 + i);
-
 		}
-
 	}
-
-
 }
 
 
@@ -426,28 +424,35 @@ void SinCompar(float *vol, float shift){
 			k[i] = count_nigativ_point[i];
 			if (((SIN_A_ref[k[i]]-shift) < vol[i]) && ((SIN_A_ref[k[i]]+shift) > vol[i])){
 				flag_channel_posit[i] = 1;
-				/*if(i == CHANN){
-					send_buffer_flag(k[i]);
-				}*/
+
 			}
 			else{
 				flag_channel_posit[i] = 0;
+
 			}
 
 			if ((((SIN_A_ref[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref[k[i]]*-1)+shift) > vol[i])){
 				flag_channel_negat[i] = 1;
+
 			}
 			else{
 				flag_channel_negat[i] = 0;
-				}
+
+			}
 
 
 
 				if (((flag_channel_posit[i]) || (flag_channel_negat[i])) && (!zero_noise[i])){
 					flag_channel[i] = 1;
+					if(i == CHANN){
+						send_buffer_flag(1);
+					}
 				}
 				else{
 					flag_channel[i] = 0;
+					if(i == CHANN){
+						send_buffer_flag(2);
+					}
 				}
 			break;
 		case 1:
@@ -470,9 +475,15 @@ void SinCompar(float *vol, float shift){
 
 					if (((flag_channel_posit[i]) || (flag_channel_negat[i])) && (!zero_noise[i])){
 						flag_channel[i] = 1;
+						if(i == CHANN){
+							send_buffer_flag(111);
+						}
 					}
 					else{
 						flag_channel[i] = 0;
+						if(i == CHANN){
+							send_buffer_flag(222);
+						}
 					}
 			break;
 		default:
@@ -486,11 +497,11 @@ void SinCompar(float *vol, float shift){
 /*Функция контроллер*/
 void Control(){
 
-
-	//TransInData();									//преобразование данных в удобный вид// функция работает правильно
+	//TransRawDataToBuffer(&data_chan[0]);
+	TransInData();									//преобразование данных в удобный вид// функция работает правильно
 	//------------------функции для теста, перед их включением необходимо закоментировать функции: ADC_DMA_Init();// TransInData();
-	GenSin();
-	TransData();
+	//GenSin();
+	//TransData();
 	//----------------------------------------
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер//функция работает бравильно
 	ZeroDetect(&real_tmp_chan[0]);
@@ -513,7 +524,7 @@ int main(void){
 
 	SYSTEM_Init();
 	RELAY_Init();
-	//ADC_DMA_Init();
+	ADC_DMA_Init();
 	TIMER_Init();
 	//RS232_Init();
 	InitGPIO();
@@ -521,8 +532,7 @@ int main(void){
 	InitKey();		//инициализация каналов переключения (отключение)
 
 	while(1){
-		/* эта хрень должна появиться в другом файле, буду надеяться, что все остальное не затрется*/
-		//теперь эта хрень должна появиться
+
 		ButControl();
 	}
 }
