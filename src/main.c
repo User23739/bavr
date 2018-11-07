@@ -20,7 +20,11 @@ volatile char buffer[20] = {'\0'};  // буфер для передачи данных, примитивный
 extern float real_tmp_chan[CHANN_W];
 //extern uint16_t ADCBuffer[7];
 extern uint16_t  data_chan[CHANN_W];
-
+extern unsigned short reg_data[30];
+extern short status_chann_A;		    		// 0 - откл; 1 - вкл
+extern short status_chann_B;
+extern short flag_priori_chann_manual;	//переменная приоритека танала
+extern short flag_aktiv_channel;
 
 
 
@@ -404,6 +408,23 @@ void PhaseRot(float *vol){
 	flag_phase_rot;
 }
 
+void MbWrite(void){
+	reg_data[0] = flag_sinch_ch;
+	reg_data[1] = status_chann_A;
+	reg_data[2] = status_chann_B;
+	reg_data[3] = flag_priori_chann_manual;
+	reg_data[4] = flag_aktiv_channel;
+
+
+
+	for (int i = 0; i<CHANN_W; i++){
+		reg_data[i+10] = rezult_true_rms[i];
+		}
+	for (int i = 0; i<CHANN_W; i++){
+		reg_data[i+20] = rez_freg[i];
+		}
+}
+
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
 /// передаем заначения всех 7 каналов. Синхронизацию ведем по 1 фазе.
 
@@ -510,6 +531,10 @@ void Control(){
 	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
 	ChannelStatus();								//Опрос состояния каналов
 	SwitchChannel();								//Управление переключениями каналов
+	MbWrite();
+
+
+
 
 
 
@@ -526,14 +551,29 @@ int main(void){
 	RELAY_Init();
 	ADC_DMA_Init();
 	TIMER_Init();
-	//RS232_Init();
+	RS232_Init();
 	InitGPIO();
 	InitGTimers();  // инициализируем глобальные таймеры
 	InitKey();		//инициализация каналов переключения (отключение)
 
 	while(1){
-
+		GPIO_SetBits(LED2_PORT, LED2);
 		ButControl();
+		//Freq();
+		do_modbus();
+		GPIO_ResetBits(LED2_PORT, LED2);
+
+
+
+		//if(i == CHANN){
+							//GPIO_SetBits(LED2_PORT, LED2); //бит установил
+							//count_zero[i]++;
+						//if(flag_mov_sin[i]){
+						//	send_buffer_flag(flag_mov_sin[i]);
+						//}
+						//else{
+						//	send_buffer_flag(flag_mov_sin[i]);
+						//}*/
 	}
 }
 

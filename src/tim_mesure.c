@@ -12,7 +12,7 @@ void TIMER_Init(void)
 
 {
 	TIMER_Init_4();
-	//TIMER_Init_3();
+	TIMER_Init_3();
 
 
 
@@ -72,7 +72,7 @@ void TIMER_Init_3(void)
 	    TIM_TimeBaseStructInit(&TIM_TimeBaseStructure);
 	    TIM_TimeBaseStructure.TIM_Prescaler= 49;
 	    TIM_TimeBaseStructure.TIM_CounterMode=TIM_CounterMode_Up;
-	    TIM_TimeBaseStructure.TIM_Period = 15000;//до этого значения будет считать таймер
+	    TIM_TimeBaseStructure.TIM_Period = 4000;//до этого значения будет считать таймер
 	    TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
 
 	    TIM_ClearFlag(TIM3, TIM_FLAG_Update);
@@ -84,8 +84,8 @@ void TIMER_Init_3(void)
 
 	    // Настройка прерывания
 	    NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn  ;
-	    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-	    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 5;
+	    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
 	    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	    NVIC_Init(&NVIC_InitStructure);
 

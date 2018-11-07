@@ -64,7 +64,7 @@ void ADC_DMA_Init( void ){
 
 	  	    ADC_setup.ADC_ScanConvMode = ENABLE;
 	  	    ADC_setup.ADC_ContinuousConvMode = ENABLE;
-	  	    ADC_setup.ADC_DataAlign = (uint32_t)0x00000000;
+	  	    ADC_setup.ADC_DataAlign = ADC_DataAlign_Right;
 	  	    ADC_setup.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
 	  	    ADC_setup.ADC_NbrOfConversion = 7;  // 1 channel
 	  	    ADC_setup.ADC_Resolution = ADC_Resolution_12b;

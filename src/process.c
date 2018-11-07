@@ -16,6 +16,7 @@ short status_chann_B = 0;		    		// 0 - откл; 1 - вкл
 extern short flag_aktiv_channel;
 extern short flag_sinch_ch;
 //extern short flag_gen_ban;
+extern unsigned short reg_data[300];
 
 
 
@@ -169,7 +170,7 @@ void ChannelStatus(void){
 	}
 	else{
 		//status_chann_A = 0;
-
+		count_true[0] = 0;
 		count_false[0]++;
 		//send_buffer_flag(444);
 	}
@@ -180,6 +181,7 @@ void ChannelStatus(void){
 	}
 	else{
 		//status_chann_B = 0;
+		count_true[0] = 0;
 		count_false[1]++;
 	}
 
@@ -194,8 +196,8 @@ void ChannelStatus(void){
 	if (count_false[1] >= ERR_C_CH + 5) count_false[1] = ERR_C_CH + 1;
 	//}
 	//else if(count_work >= 160){
-	if (count_true[0] >= TRU_C_CH + 5 ) count_true[0] = 0;
-	if (count_true[1] >= TRU_C_CH + 5) count_true[1] = 0;
+	if (count_true[0] >= TRU_C_CH + 5 ) count_true[0] = TRU_C_CH +1;
+	if (count_true[1] >= TRU_C_CH + 5) count_true[1] = TRU_C_CH +1;
 	//	count_work = 0;
 	//}
 

@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
+#include "stdbool.h"
 //#include <math.h">
 
 /*----CMSIS и SPL----------*/
@@ -38,6 +39,8 @@
 #include "process.h"
 #include "gpio.h"
 #include "spl.h"
+#include "modbus.h"
+
 
 /*----Глобальные константы-------*/
 #define CHANN_W 6  						//количество рабочих каналов
@@ -57,6 +60,7 @@ void TrueRMS(float *vol);
 void Freq();
 void GenSin(void);
 void TransData(void);
+void MbWrite(void);
 
 
 
