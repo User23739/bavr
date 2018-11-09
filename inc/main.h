@@ -15,7 +15,7 @@
 #include <time.h>
 #include <math.h>
 #include "stdbool.h"
-//#include <math.h">
+//#include <сmath.h">
 
 /*----CMSIS и SPL----------*/
 /*#include "stm32f2xx_conf.h"
@@ -46,6 +46,7 @@
 #define CHANN_W 6  						//количество рабочих каналов
 #define KEY_DELAY 60 				 	//задержка на включение ключей
 #define STOP_RELEY_TIMERS 10000			//защита от переполнения таймеров
+#define BUFER_CIZE 320 					//размер накопительног буфера
 
 
 
@@ -56,11 +57,12 @@ void Control(void);
 void USARTSend(const unsigned char *pucBuffer);
 void SinCompar(float *vol, float shift);
 void ZeroDetect(float *vol);
-void TrueRMS(float *vol);
 void Freq();
 void GenSin(void);
 void TransData(void);
 void MbWrite(void);
+bool approximatelyEqual(float a, float b, float epsilon);
+void SinChanAB();
 
 
 

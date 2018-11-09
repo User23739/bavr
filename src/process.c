@@ -17,6 +17,8 @@ extern short flag_aktiv_channel;
 extern short flag_sinch_ch;
 //extern short flag_gen_ban;
 extern unsigned short reg_data[300];
+extern short flag_freq[2];
+extern short flag_sinch_ch;
 
 
 
@@ -27,9 +29,11 @@ extern unsigned short reg_data[300];
 
 #define ERR_C_CH 20  	//колличество допустимых ощибок на канал
 #define TRU_C_CH 160     //колличсество положительных отсчетов для включения
-
+#define BUFER_CIZE 320    //размер буфера
+#define DEPTH 160		 //глубина интеграции для РМС
 
 //переменные для хранения текущих значений измерения
+float rezult_true_rms[CHANN_W] = {0};
 
  float real_tmp_chan[CHANN_W] = {0}; // переменная куда помещаются измеренные данные
 										// с АЦП
@@ -67,71 +71,40 @@ void TransInData(void){
 
 }
 
-uint16_t raw_data_chanA1[321] = {0};
-uint16_t raw_data_chanA2[321] = {0};
-uint16_t raw_data_chanA3[321] = {0};
 
-uint16_t raw_data_chanB1[321] = {0};
-uint16_t raw_data_chanB2[321] = {0};
-uint16_t raw_data_chanB3[321] = {0};
-
-int aa1 = 0;			//указатели буфера канала А
-int bb1 = 0;			//указатели буфера канала B
 
 
 
 void TransRawDataToBuffer(uint16_t *vol){
+	static int aa[CHANN_W] = {0};			//указатели буфера
+	static uint16_t raw_data_chan[CHANN_W][BUFER_CIZE];
+	for (int i=0; i<CHANN_W; i++){
 
-		if(aa1 >= 320 ) aa1 = 0;
-		raw_data_chanA1[aa1] = vol[0];
-		raw_data_chanA2[aa1] = vol[1];
-		raw_data_chanA3[aa1] = vol[2];
-		aa1++;
-		if(bb1  >= 320) bb1 = 0;
-		raw_data_chanB1[bb1] = vol[3];
-		raw_data_chanB2[bb1] = vol[4];
-		raw_data_chanB3[bb1] = vol[5];
-		bb1++;
+			if(aa[i] >= BUFER_CIZE - 1 ) aa[i] = 0;
+			raw_data_chan[i][aa[i]] = vol[i];
+			aa[i]++;
+
+		}
+
+
+
 }
 
 
 
  // переменные  буфера
 // буфер кольцево для хранения данных измерения
-float buff_chanA1[321] = {0};
-float buff_chanA2[321] = {0};
-float buff_chanA3[321] = {0};
-
-float buff_chanB1[321] = {0};
-float buff_chanB2[321] = {0};
-float buff_chanB3[321] = {0};
-
-float buff_chanC1[321] = {0};
-
-
-
-
+float buff_chan[CHANN_W][BUFER_CIZE] = {0};                //двойной массив [x][y] x-колличество каналов, y- колличество ячеек
 //указатель кольцевого буфера
-int a1 = 0;			//указатели буфера канала А
-int b1 = 0;			//указатели буфера канала B
-int c1 = 0;					//указатели буфера канала С
+int a[CHANN_W] = {0};
 
 void BuffData(float *vol){
 
-
-	if(a1 >= 320 ) a1 = 0;
-	buff_chanA1[a1] = vol[0];
-	buff_chanA2[a1] = vol[1];
-	buff_chanA3[a1] = vol[2];
-	a1++;
-	if(b1  >= 320) b1 = 0;
-	buff_chanB1[b1] = vol[3];
-	buff_chanB2[b1] = vol[4];
-	buff_chanB3[b1] = vol[5];
-	b1++;
-	if(c1  >= 320 ) c1 = 0;
-	buff_chanC1[c1] = vol[6];
-	c1++;
+	for (int i=0; i<CHANN_W; i++){
+		if(a[i] >= BUFER_CIZE - 1 ) a[i] = 0;
+		buff_chan[i][a[i]] = vol[i];
+		a[i]++;
+	}
 }
 
 
@@ -143,7 +116,7 @@ void ChannelStatus(void){
 	//static int count_work;
 	//count_work++;
 
-	for (int i=0; i<CHANN_W; i++){
+	/*for (int i=0; i<CHANN_W; i++){
 		switch (flag_channel[i]){
 			case 0:
 				flag_status_chann[i] = 0;
@@ -159,8 +132,8 @@ void ChannelStatus(void){
 			default:
 				break;
 		}
-	}
-	if ((flag_status_chann[0])&&(flag_status_chann[1])&&(flag_status_chann[2])){
+	}*/
+	if ((flag_channel[0])&&(flag_channel[1])&&(flag_channel[2])/*&&(flag_freq[0])*/){
 
 		//status_chann_A = 1;
 		count_false[0] = 0;
@@ -174,14 +147,14 @@ void ChannelStatus(void){
 		count_false[0]++;
 		//send_buffer_flag(444);
 	}
-	if ((flag_status_chann[3])&&(flag_status_chann[4])&&(flag_status_chann[5])){
+	if ((flag_channel[3])&&(flag_channel[4])&&(flag_channel[5])/*&&(flag_freq[1])*/){
 		//status_chann_B = 1;
 		count_false[1] = 0;
 		count_true[1]++;
 	}
 	else{
 		//status_chann_B = 0;
-		count_true[0] = 0;
+		count_true[1] = 0;
 		count_false[1]++;
 	}
 
@@ -365,5 +338,27 @@ void SwitchChannel(void){
 		}
 }
 
+/*Функция расчета среднеквадратичного значения*/
+void TrueRMS(){
+//static float l_buffer[CHANN_W][BUFER_CIZE];
+//static float var_sum_n[CHANN_W];
+static int l_p[CHANN_W];
+static int bef_l_p[CHANN_W];
+float var[CHANN_W] = {0};
+
+	for (int i=0; i<CHANN_W; i++){
+		bef_l_p[i] = l_p[i];
+		l_p[i] =  a[i] ;
+		var[i] = 0;
+		for (int k=DEPTH; k>=0; k--){
+			var[i] += buff_chan[i][l_p[i]] * buff_chan[i][l_p[i]];
+			if(l_p[i] == 0 ) l_p[i] = BUFER_CIZE + 1;
+			l_p[i]--;
+		}
+		rezult_true_rms[i] =roundl((sqrt(var[i]/DEPTH))-10);
+}
+
+
+}
 
 

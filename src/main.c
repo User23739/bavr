@@ -12,6 +12,9 @@
 #define MEG_POINT 41
 #define QUANT_POINT 0.00025
 #define SHIFT_PHASE_ROT 20
+#define FREG 50
+#define SHIFT_FREG 3
+#define SINCH_TRESHOLD 20
 
 
 
@@ -25,6 +28,8 @@ extern short status_chann_A;		    		// 0 - откл; 1 - вкл
 extern short status_chann_B;
 extern short flag_priori_chann_manual;	//переменная приоритека танала
 extern short flag_aktiv_channel;
+extern float buff_chan[CHANN_W][BUFER_CIZE];
+extern int a[CHANN_W];
 
 
 
@@ -55,10 +60,16 @@ short flag_zero[CHANN_W] = {0};					// 0-"0"не найден; 1-"0" найден
 											// [5]-КАНАЛ В ФАЗА 3
 											// [6]-КАНАЛ С ФАЗА 1
 
+short flag_freq[2] = {0};					// 0-"0"частота не в норме; 1-"1" частота в норме
+											//// [0]-КАНАЛ А ФАЗА 1
+											// [1]-КАНАЛ Б ФАЗА 2
+
+
+
 short zero_noise[CHANN_W] = {0};					// 0 - нету дребезга; 1- дребезг;
 
 float rez_freg[CHANN_W] = {0};				// переменная для частоты по всем каналам
-float rezult_true_rms[CHANN_W] = {0};						//переменная для хранения значений напряжения.
+extern float rezult_true_rms[CHANN_W];						//переменная для хранения значений напряжения.
 
 
 
@@ -117,11 +128,6 @@ int  count_point[CHANN_W] = {0};						//счетчик отчетов
 // буфер кольцево для хранения данных измерения
 short buff_flag_[1000] = {0};
 
-
-
-
-
-
 /*Функции для тестов */
 
 //переменная для хранения значений генератора
@@ -173,14 +179,12 @@ void GenSin(void){
 		}
 }
 
-
 void TransData(void){
 
 	for (int i = 0; i<CHANN_W; i++){
 		real_tmp_chan[i] = gen_data[i];
 	}
 }
-
 
 void TIM4_IRQHandler(void){
 
@@ -208,10 +212,6 @@ void USARTSend(const unsigned char *pucBuffer){
 	}
 }
 
-
-
-
-
 /*Функция детектирования 0*/
 
 void ZeroDetect(float *vol){
@@ -229,7 +229,6 @@ void ZeroDetect(float *vol){
 				if(flag_zero[i] == 2){
 					zero_noise[i] = 1;
 				}
-
 			}
 			else{
 				flag_zero[i] = 0;
@@ -286,10 +285,7 @@ void ZeroDetect(float *vol){
 				else{
 					send_buffer_flag(flag_mov_sin[i]);
 				}*/
-
-
-
-			//рабочий метод только при синусоиде. при ноле  начинается дребезг
+		//рабочий метод только при синусоиде. при ноле  начинается дребезг
 			if(flag_mov_sin[i]){
 				count_nigativ_point[i] = 0;
 				count_posit_point[i]++;
@@ -300,82 +296,88 @@ void ZeroDetect(float *vol){
 			}
 			if (count_nigativ_point[i] >41) count_nigativ_point[i] = 0;
 			if (count_posit_point[i] >41) count_posit_point[i] = 0;
-
 		}
-		/*for (int i = 0; i<7; i++){
-			if (count_nigativ_point[i] >40) count_nigativ_point[i] = 0;
-			if (count_posit_point[i] >40) count_posit_point[i] = 0;
-		}*/
 
 }
 
 /*Функция расчета частоты*/
 void Freq(){
-
+	static float sum_freg[CHANN_W];
+	static float after[CHANN_W];
+	static float befor[CHANN_W];
 	for (int i = 0; i<CHANN_W; i++){
-		if (flag_mov_sin[0]){
+		if (flag_mov_sin[i]){
 			StartGTimer(GTIMER3 + i);
-			rez_freg[i] = (1/((float)GetGTimer(GTIMER9 + i)*0.00025))/2;
+			after[i] = (1/((float)GetGTimer(GTIMER9 + i)*0.00025))/2;
 			StopGTimer(GTIMER9 + i);
 		}
 		else{
 			StartGTimer(GTIMER9 + i);
-			rez_freg[i] = (1/((float)GetGTimer(GTIMER3 + i)*0.00025))/2;
+			befor[i] = (1/((float)GetGTimer(GTIMER3 + i)*0.00025))/2;
 			StopGTimer(GTIMER3 + i);
 		}
+		rez_freg[i] = (after[i]+befor[i])/2;
 	}
 }
 
+void FreqCompar() {
+	short int freq[CHANN_W] = {0};
 
-
-/*Функция расчета среднеквадратичного значения*/
-void TrueRMS(float *vol){
-static float var_sum_p[CHANN_W];
-static float var_sum_n[CHANN_W];
-static int Np[CHANN_W];
-static int Nn[CHANN_W];
-float var[CHANN_W] = {0};
-
-	for (int i=0; i<CHANN_W; i++){
-		if(flag_mov_sin[i]){
-			if(Nn[i]>=39){
-				rezult_true_rms[i] =roundl(sqrt(var_sum_n[i]/Nn[i]));
-				Nn[i] = 0;
-				var_sum_n[i] = 0;
-			}
-			Np[i]++;
-			var[i] = vol[i];
-			var_sum_p[i] +=var[i]*var[i];
+	for (int i = 0; i<CHANN_W; i++){
+		if((rez_freg[i] <= FREG + SHIFT_FREG) && (rez_freg[i] >= FREG - SHIFT_FREG)){
+			freq[i] = 1;
 		}
 		else{
-			if(Np[i]>=39){
-				rezult_true_rms[i] =roundl(sqrt(var_sum_p[i]/Np[i]));
-				Np[i] = 0;
-				var_sum_p[i] = 0;
-			}
-			Nn[i]++;
-			var[i] = vol[i];
-			var_sum_n[i] +=var[i]*var[i];
-
+			freq[i] = 0;
 		}
+
 	}
 
+	if((freq[0]) && (freq[1]) && (freq[2])){
+		flag_freq[0] = 1;
+	}
+	else{
+		flag_freq[0] = 0;
+	}
+
+	if((freq[3]) && (freq[4]) && (freq[5])){
+			flag_freq[1] = 1;
+		}
+		else{
+			flag_freq[1] = 0;
+		}
+
+	/*bool freq[CHANN_W];
+	for (int i = 0; i<CHANN_W; i++){
+		freq[i] = approximatelyEqual(rez_freg[i], FREG, 0.04);
+	}*/
 }
+
+
+
 
 /*Функция определения синхронности каналов*/
-void SinChanAB(float *vol){
-float data_chan[CHANN_W] = {0};
-for (int i=0; i<CHANN_W; i++){
-	data_chan[i] = vol[i];
-		}
-	if (flag_mov_sin[0] == flag_mov_sin[3]){
-		if (flag_mov_sin[1] == flag_mov_sin[4]){
-			if (flag_mov_sin[2] == flag_mov_sin[5]){
-
+void SinChanAB(){
+		if(count_nigativ_point[0] == count_nigativ_point[3]){
+			if(count_nigativ_point[1] == count_nigativ_point[4]){
+				if(count_nigativ_point[2] == count_nigativ_point[5]){
+					flag_sinch_ch = 1;
+				}
 			}
 		}
-	}
+		else{
+			flag_sinch_ch = 0;
+		}
+
+
 }
+
+// возвращаем true, если разница между a и b в пределах процента эпсилона
+/*bool approximatelyEqual(float a, float b, float epsilon)
+{
+    return fabsf(a - b) <= ( (fabsf(a) < fabsf(b) ? fabsf(b) : fabsf(a)) * epsilon);
+}
+*/
 
 /*Функция определения чередования фаз */
 void PhaseRot(float *vol){
@@ -431,38 +433,26 @@ void MbWrite(void){
 void SinCompar(float *vol, float shift){
 
 	static int k[CHANN_W];
-
-
 	for (int i=0; i<CHANN_W; i++){
 		flag_channel_posit[i] = 0;
 		flag_channel_negat[i] = 0;
 	}
-
-
 	for (int i=0; i<CHANN_W; i++){
 		switch(flag_mov_sin[i]){
 		case 0:
 			k[i] = count_nigativ_point[i];
 			if (((SIN_A_ref[k[i]]-shift) < vol[i]) && ((SIN_A_ref[k[i]]+shift) > vol[i])){
 				flag_channel_posit[i] = 1;
-
 			}
 			else{
 				flag_channel_posit[i] = 0;
-
 			}
-
 			if ((((SIN_A_ref[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref[k[i]]*-1)+shift) > vol[i])){
 				flag_channel_negat[i] = 1;
-
 			}
 			else{
 				flag_channel_negat[i] = 0;
-
 			}
-
-
-
 				if (((flag_channel_posit[i]) || (flag_channel_negat[i])) && (!zero_noise[i])){
 					flag_channel[i] = 1;
 					if(i == CHANN){
@@ -518,7 +508,7 @@ void SinCompar(float *vol, float shift){
 /*Функция контроллер*/
 void Control(){
 
-	//TransRawDataToBuffer(&data_chan[0]);
+	//TransRawDataToBuffer(&data_chan[0]);			//тестовая функция для проверки данных от ацп
 	TransInData();									//преобразование данных в удобный вид// функция работает правильно
 	//------------------функции для теста, перед их включением необходимо закоментировать функции: ADC_DMA_Init();// TransInData();
 	//GenSin();
@@ -527,7 +517,8 @@ void Control(){
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер//функция работает бравильно
 	ZeroDetect(&real_tmp_chan[0]);
 	Freq();
-	TrueRMS(&real_tmp_chan[0]);
+	//FreqCompar();
+	SinChanAB();
 	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
 	ChannelStatus();								//Опрос состояния каналов
 	SwitchChannel();								//Управление переключениями каналов
@@ -559,7 +550,9 @@ int main(void){
 	while(1){
 		GPIO_SetBits(LED2_PORT, LED2);
 		ButControl();
-		//Freq();
+
+		TrueRMS();
+
 		do_modbus();
 		GPIO_ResetBits(LED2_PORT, LED2);
 
