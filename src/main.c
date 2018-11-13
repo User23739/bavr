@@ -4,16 +4,16 @@
 #include "main.h"
 /*-----Локальные константы------*/
 
-#define CHANN 3
+#define CHANN 5
 #define ZERO_MAX 13
 #define ZERO_MIN -13
 #define COUN_SINCH_ERR 20
 #define COUNT_END 10000
 #define MEG_POINT 41
-#define QUANT_POINT 0.00025
+
 #define SHIFT_PHASE_ROT 20
 #define FREG 50
-#define SHIFT_FREG 3
+#define SHIFT_FREG 4
 #define SINCH_TRESHOLD 20
 
 
@@ -52,6 +52,14 @@ short flag_phase_rot = 0;  	 //фла прямого чередования фаз
 							 //1-правильное чередование
 
 short flag_zero[CHANN_W] = {0};					// 0-"0"не найден; 1-"0" найден
+											//// [0]-КАНАЛ А ФАЗА 1
+											// [1]-КАНАЛ А ФАЗА 2
+											// [2]-КАНАЛ А ФАЗА 3
+											// [3]-КАНАЛ В ФАЗА 1
+											// [4]-КАНАЛ В ФАЗА 2
+											// [5]-КАНАЛ В ФАЗА 3
+											// [6]-КАНАЛ С ФАЗА 1
+short flag_zero_freq[CHANN_W] = {0};					// 0-"0"не найден; 1-"0" найден
 											//// [0]-КАНАЛ А ФАЗА 1
 											// [1]-КАНАЛ А ФАЗА 2
 											// [2]-КАНАЛ А ФАЗА 3
@@ -236,6 +244,7 @@ void ZeroDetect(float *vol){
 			}
 
 			if ((after[i] > 0) && (before[i] > 0)){
+				flag_zero_freq[i] = 1;
 				flag_mov_sin[i] = 1;
 				if(i == CHANN){
 					send_buffer_flag(777);
@@ -256,6 +265,7 @@ void ZeroDetect(float *vol){
 				//count_posit_point[i] = 0;
 			}
 			else if ((after[i] < 0) && (before[i] < 0)){
+				flag_zero_freq[i] = 0;
 				flag_mov_sin[i] = 0;
 				if(i == CHANN){
 					send_buffer_flag(999);
@@ -517,8 +527,8 @@ void Control(){
 	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер//функция работает бравильно
 	ZeroDetect(&real_tmp_chan[0]);
 	Freq();
-	//FreqCompar();
-	SinChanAB();
+	FreqCompar();
+	//SinChanAB();
 	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
 	ChannelStatus();								//Опрос состояния каналов
 	SwitchChannel();								//Управление переключениями каналов
@@ -548,25 +558,12 @@ int main(void){
 	InitKey();		//инициализация каналов переключения (отключение)
 
 	while(1){
-		GPIO_SetBits(LED2_PORT, LED2);
+		//GPIO_SetBits(LED2_PORT, LED2);
 		ButControl();
-
 		TrueRMS();
-
 		do_modbus();
-		GPIO_ResetBits(LED2_PORT, LED2);
+		//GPIO_ResetBits(LED2_PORT, LED2);
 
-
-
-		//if(i == CHANN){
-							//GPIO_SetBits(LED2_PORT, LED2); //бит установил
-							//count_zero[i]++;
-						//if(flag_mov_sin[i]){
-						//	send_buffer_flag(flag_mov_sin[i]);
-						//}
-						//else{
-						//	send_buffer_flag(flag_mov_sin[i]);
-						//}*/
 	}
 }
 

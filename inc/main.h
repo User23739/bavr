@@ -47,6 +47,7 @@
 #define KEY_DELAY 60 				 	//задержка на включение ключей
 #define STOP_RELEY_TIMERS 10000			//защита от переполнения таймеров
 #define BUFER_CIZE 320 					//размер накопительног буфера
+#define QUANT_POINT 0.00025				//единица времени квантования
 
 
 
