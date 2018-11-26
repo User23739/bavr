@@ -13,9 +13,12 @@
 
 #define SHIFT_PHASE_ROT 20
 #define FREG 50
-#define SHIFT_FREG 4
+#define SHIFT_FREG 2
 #define SINCH_TRESHOLD 20
-
+#define ZERO_MAX_SWITCH 20
+#define ZERO_MIN_SWITCH -20
+#define SWITCH_POINT 2
+#define SWITCH_POINT_CRASH 8
 
 
 //-------переменныеи------------------------------------
@@ -30,7 +33,7 @@ extern short flag_priori_chann_manual;	//переменная приоритека танала
 extern short flag_aktiv_channel;
 extern float buff_chan[CHANN_W][BUFER_CIZE];
 extern int a[CHANN_W];
-
+extern float rezult_true_rms[CHANN_W];						//переменная для хранения значений напряжения.
 
 
 
@@ -51,16 +54,17 @@ short flag_phase_rot = 0;  	 //фла прямого чередования фаз
 							 //0-ошибка чередования
 							 //1-правильное чередование
 
-short flag_zero[CHANN_W] = {0};					// 0-"0"не найден; 1-"0" найден
-											//// [0]-КАНАЛ А ФАЗА 1
+short flag_zero[CHANN_W] = {0};				// 0-"0"не найден; 1-"0" найден
+											// [0]-КАНАЛ А ФАЗА 1
 											// [1]-КАНАЛ А ФАЗА 2
 											// [2]-КАНАЛ А ФАЗА 3
 											// [3]-КАНАЛ В ФАЗА 1
 											// [4]-КАНАЛ В ФАЗА 2
 											// [5]-КАНАЛ В ФАЗА 3
 											// [6]-КАНАЛ С ФАЗА 1
-short flag_zero_freq[CHANN_W] = {0};					// 0-"0"не найден; 1-"0" найден
-											//// [0]-КАНАЛ А ФАЗА 1
+
+short flag_zero_freq[CHANN_W] = {0};		// 0-"0"не найден; 1-"0" найден
+											// [0]-КАНАЛ А ФАЗА 1
 											// [1]-КАНАЛ А ФАЗА 2
 											// [2]-КАНАЛ А ФАЗА 3
 											// [3]-КАНАЛ В ФАЗА 1
@@ -69,7 +73,7 @@ short flag_zero_freq[CHANN_W] = {0};					// 0-"0"не найден; 1-"0" найден
 											// [6]-КАНАЛ С ФАЗА 1
 
 short flag_freq[2] = {0};					// 0-"0"частота не в норме; 1-"1" частота в норме
-											//// [0]-КАНАЛ А ФАЗА 1
+											// [0]-КАНАЛ А ФАЗА 1
 											// [1]-КАНАЛ Б ФАЗА 2
 
 
@@ -77,7 +81,10 @@ short flag_freq[2] = {0};					// 0-"0"частота не в норме; 1-"1" частота в норме
 short zero_noise[CHANN_W] = {0};					// 0 - нету дребезга; 1- дребезг;
 
 float rez_freg[CHANN_W] = {0};				// переменная для частоты по всем каналам
-extern float rezult_true_rms[CHANN_W];						//переменная для хранения значений напряжения.
+
+short flag_z_switch_crash = 0;		// переменная разрешающая переключение при достижениее синусоиды ноля при аварии
+short flag_z_switch = 0;		// переменная разрешающая переключение при достижениее синусоидой ноля при ручном режиме
+
 
 
 
@@ -231,18 +238,6 @@ void ZeroDetect(float *vol){
 		for (int i = 0; i<CHANN_W; i++){
 			before[i] = after[i];
 			after[i] = vol[i];
-
-			if ((after[i] < ZERO_MAX) && (after[i] > ZERO_MIN)){
-				flag_zero[i] += 1;
-				if(flag_zero[i] == 2){
-					zero_noise[i] = 1;
-				}
-			}
-			else{
-				flag_zero[i] = 0;
-				zero_noise[i] = 0;
-			}
-
 			if ((after[i] > 0) && (before[i] > 0)){
 				flag_zero_freq[i] = 1;
 				flag_mov_sin[i] = 1;
@@ -309,6 +304,44 @@ void ZeroDetect(float *vol){
 		}
 
 }
+/*--------------Функция определения дребезга на канале измерения при пропаданиии сети */
+void Noise(float *vol){
+	for (int i = 0; i<CHANN_W; i++){
+				if ((vol[i] < ZERO_MAX) && (vol[i] > ZERO_MIN)){
+					flag_zero[i] += 1;
+					if(flag_zero[i] == 2){
+						zero_noise[i] = 1;
+					}
+				}
+				else{
+					flag_zero[i] = 0;
+					zero_noise[i] = 0;
+				}
+		}
+
+}
+/*----------Функция следящая за сниждением напряжения до близких значени
+ * ноля для возможности переключения при не синхронных каналах  при переключении*/
+void FastSwitch(float *vol){
+	static short flag_zero_switch;					// переменная разрешающая переключение при достижениее синусоиды ноля
+	static short flag_zero_switch_pl;				// дополнительная переменная
+
+	if ((vol[6] < ZERO_MAX_SWITCH) && (vol[6] > ZERO_MIN_SWITCH)){
+		flag_zero_switch_pl += 1;
+		if(flag_zero_switch_pl == SWITCH_POINT){
+					flag_z_switch = 1;
+		}
+		if(flag_zero_switch_pl == SWITCH_POINT_CRASH){
+			flag_z_switch_crash = 1;
+		}
+	}
+	else{
+		flag_zero_switch_pl = 0;
+		flag_z_switch_crash = 0;
+	}
+
+
+}
 
 /*Функция расчета частоты*/
 void Freq(){
@@ -318,15 +351,17 @@ void Freq(){
 	for (int i = 0; i<CHANN_W; i++){
 		if (flag_mov_sin[i]){
 			StartGTimer(GTIMER3 + i);
-			after[i] = (1/((float)GetGTimer(GTIMER9 + i)*0.00025))/2;
-			StopGTimer(GTIMER9 + i);
+			//after[i] = (1/((float)GetGTimer(GTIMER9 + i)*0.00025))/2;
+			after[i] = GetGTimer(GTIMER10 + i);
+			StopGTimer(GTIMER10 + i);
 		}
 		else{
-			StartGTimer(GTIMER9 + i);
-			befor[i] = (1/((float)GetGTimer(GTIMER3 + i)*0.00025))/2;
+			StartGTimer(GTIMER10 + i);
+			//befor[i] = (1/((float)GetGTimer(GTIMER3 + i)*0.00025))/2;
+			befor[i] = GetGTimer(GTIMER3 + i);
 			StopGTimer(GTIMER3 + i);
 		}
-		rez_freg[i] = (after[i]+befor[i])/2;
+		rez_freg[i] = 4000/(after[i]+befor[i]);
 	}
 }
 
@@ -370,9 +405,9 @@ void FreqCompar() {
 void SinChanAB(){
 		if(count_nigativ_point[0] == count_nigativ_point[3]){
 			if(count_nigativ_point[1] == count_nigativ_point[4]){
-				if(count_nigativ_point[2] == count_nigativ_point[5]){
+				/*if(count_nigativ_point[2] == count_nigativ_point[5]){*/
 					flag_sinch_ch = 1;
-				}
+				/*}*/
 			}
 		}
 		else{
@@ -524,15 +559,17 @@ void Control(){
 	//GenSin();
 	//TransData();
 	//----------------------------------------
-	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер//функция работает бравильно
+	BuffData(&real_tmp_chan[0]);					// помещение данных в буфер//функция работает правильно
 	ZeroDetect(&real_tmp_chan[0]);
+	Noise(&real_tmp_chan[0]);
 	Freq();
 	FreqCompar();
 	//SinChanAB();
-	SinCompar(&real_tmp_chan[0], shift20);			//Вызываем функцию сравнения канала А
+	SinCompar(&real_tmp_chan[0], shift20);			//Сравнение синусоид
 	ChannelStatus();								//Опрос состояния каналов
+	FastSwitch(&real_tmp_chan[0]);
 	SwitchChannel();								//Управление переключениями каналов
-	MbWrite();
+
 
 
 
@@ -561,6 +598,7 @@ int main(void){
 		//GPIO_SetBits(LED2_PORT, LED2);
 		ButControl();
 		TrueRMS();
+		MbWrite();
 		do_modbus();
 		//GPIO_ResetBits(LED2_PORT, LED2);
 

@@ -43,12 +43,18 @@
 
 
 /*----Глобальные константы-------*/
-#define CHANN_W 6  						//количество рабочих каналов
+#define CHANN_W 7  						//количество рабочих каналов
 #define KEY_DELAY 60 				 	//задержка на включение ключей
 #define STOP_RELEY_TIMERS 10000			//защита от переполнения таймеров
 #define BUFER_CIZE 320 					//размер накопительног буфера
 #define QUANT_POINT 0.00025				//единица времени квантования
-
+#define CHANNAL_A 0
+#define CHANNAL_B 1
+#define ACTIV_OFF 0
+#define ACTIV_CH_A 1
+#define ACTIV_CH_B 2
+#define SINKH_OFF 0
+#define SINKH_ON 1
 
 
 
@@ -62,8 +68,10 @@ void Freq();
 void GenSin(void);
 void TransData(void);
 void MbWrite(void);
-bool approximatelyEqual(float a, float b, float epsilon);
+//bool approximatelyEqual(float a, float b, float epsilon);
 void SinChanAB();
+void Noise(float *vol);
+void FastSwitch(float *vol);
 
 
 

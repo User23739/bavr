@@ -19,6 +19,8 @@ extern short flag_sinch_ch;
 extern unsigned short reg_data[300];
 extern short flag_freq[2];
 extern short flag_sinch_ch;
+extern short flag_z_switch_crash;
+extern short flag_z_switch;
 
 
 
@@ -27,8 +29,8 @@ extern short flag_sinch_ch;
 #define U_QUANTUM 0.35679742    //значение 1 кванта в вольтах
 #define AVER_N 2			//значение усреднения
 
-#define ERR_C_CH 20  	//колличество допустимых ощибок на канал
-#define TRU_C_CH 39     //колличсество положительных отсчетов для включения
+#define ERR_C_CH 4  	//колличество допустимых ощибок на канал
+#define TRU_C_CH 2000     //колличсество положительных отсчетов для включения
 #define BUFER_CIZE 320    //размер буфера
 #define DEPTH 79		 //глубина интеграции для РМС
 
@@ -108,19 +110,18 @@ void BuffData(float *vol){
 }
 
 
-//----------функция переключения------------------------------------------------------------------------
+//---------- функция принятия решения о переключении------------------------------------------------------------------------
 
 void ChannelStatus(void){
 	static int count_true[2];
 	static int count_false[2];
 
 	if ((flag_channel[0])&&(flag_channel[1])&&(flag_channel[2])&&(flag_freq[0])){
-
-		count_false[0] = 0;
 		count_true[0]++;
-		}
+		count_false[0] = 0;
+	}
 	else{
-		count_true[0] = 0;
+		if(count_false[0] >= ERR_C_CH - 1) count_true[0] = 0;
 		count_false[0]++;
 	}
 	if ((flag_channel[3])&&(flag_channel[4])&&(flag_channel[5])&&(flag_freq[1])){
@@ -128,7 +129,7 @@ void ChannelStatus(void){
 		count_true[1]++;
 	}
 	else{
-		count_true[1] = 0;
+		if(count_false[1] >= ERR_C_CH - 1) count_true[1] = 0;
 		count_false[1]++;
 	}
 	if (count_true[0]>= TRU_C_CH) status_chann_A = 1;
@@ -145,15 +146,15 @@ void ChannelStatus(void){
 
 }
 
-//--------функция принятия решения о переключении-------------------------------------------------------
+//--------функция переключения -------------------------------------------------------
 
 void SwitchChannel(void){
 
 	if((status_chann_A)&&(status_chann_B)){
 		switch (flag_priori_chann_manual){
-				case 0:
+				case CHANNAL_A:
 					switch(flag_aktiv_channel){
-						case 0:
+						case ACTIV_OFF:
 							GPIO_SetBits(LED2_PORT, LED2);
 							if(GetGTimer(GTIMER1) >KEY_DELAY){
 								ChannelAON();
@@ -161,22 +162,22 @@ void SwitchChannel(void){
 								StopGTimer(GTIMER1);
 								}
 							break;
-						case 1:
+						case ACTIV_CH_A:
 							//ничего не делаем
 							break;
-						case 2:
+						case ACTIV_CH_B:
 							//дополнительно проверяем на синхронность каналов
 							switch(flag_sinch_ch){
-									case 0:
+									case SINKH_OFF:
 										GPIO_SetBits(LED2_PORT, LED2);
 										ChannelBOFF();
-										if(GetGTimer(GTIMER1) >KEY_DELAY){
+										if(flag_z_switch){
 											ChannelAON();
 											GPIO_ResetBits(LED2_PORT, LED2);
-											StopGTimer(GTIMER1);
+
 											}
 										break;
-									case 1:
+									case SINKH_ON:
 										GPIO_SetBits(LED2_PORT, LED2);
 										ChannelBOFF();
 										ChannelAON();
@@ -190,9 +191,9 @@ void SwitchChannel(void){
 							break;
 						}
 					break;
-				case 1:
+				case CHANNAL_B:
 					switch(flag_aktiv_channel){
-						case 0:
+						case ACTIV_OFF:
 							GPIO_SetBits(LED2_PORT, LED2);
 							if(GetGTimer(GTIMER2) >KEY_DELAY){
 								ChannelBON();
@@ -200,19 +201,18 @@ void SwitchChannel(void){
 							GPIO_ResetBits(LED2_PORT, LED2);
 							}
 							break;
-						case 1:
+						case ACTIV_CH_A:
 							//дополнительно проверяем на синхронность каналов
 							switch(flag_sinch_ch){
-									case 0:
+									case SINKH_OFF:
 										GPIO_SetBits(LED2_PORT, LED2);
 										ChannelAOFF();
-										if(GetGTimer(GTIMER2) >KEY_DELAY){
+										if(flag_z_switch){
 											ChannelBON();
 											GPIO_ResetBits(LED2_PORT, LED2);
-											StopGTimer(GTIMER2);
 											}
 										break;
-									case 1:
+									case SINKH_ON:
 										GPIO_SetBits(LED2_PORT, LED2);
 										ChannelAOFF();
 										ChannelBON();
@@ -222,7 +222,7 @@ void SwitchChannel(void){
 										break;
 								}
 							break;
-						case 2:
+						case ACTIV_CH_B:
 							//тут ничего не делаем
 							break;
 						default:
@@ -238,7 +238,7 @@ void SwitchChannel(void){
 
 	if((status_chann_A)&&(!status_chann_B)){
 		switch(flag_aktiv_channel){
-			case 0:
+			case ACTIV_OFF:
 				GPIO_SetBits(LED2_PORT, LED2);
 				if(GetGTimer(GTIMER1) >KEY_DELAY){
 					ChannelAON();
@@ -246,22 +246,21 @@ void SwitchChannel(void){
 					StopGTimer(GTIMER1);
 					}
 				break;
-			case 1:
+			case ACTIV_CH_A:
 				//ничего не делаем
 				break;
-			case 2:
+			case ACTIV_CH_B:
 				//дополнительно проверяем на синхронность каналов
 				switch(flag_sinch_ch){
-						case 0:
+						case SINKH_OFF:
 							GPIO_SetBits(LED2_PORT, LED2);
 							ChannelBOFF();
-							if(GetGTimer(GTIMER1) >KEY_DELAY){
+							if(flag_z_switch_crash){
 								ChannelAON();
 								GPIO_ResetBits(LED2_PORT, LED2);
-								StopGTimer(GTIMER1);
 								}
 							break;
-						case 1:
+						case SINKH_ON:
 							GPIO_SetBits(LED2_PORT, LED2);
 							ChannelBOFF();
 							ChannelAON();
@@ -278,7 +277,7 @@ void SwitchChannel(void){
 	}
 	if((!status_chann_A)&&(status_chann_B)){
 		switch(flag_aktiv_channel){
-			case 0:
+			case ACTIV_OFF:
 				GPIO_SetBits(LED2_PORT, LED2);
 				if(GetGTimer(GTIMER2) >KEY_DELAY){
 					ChannelBON();
@@ -286,19 +285,18 @@ void SwitchChannel(void){
 					StopGTimer(GTIMER2);
 				}
 				break;
-			case 1:
+			case ACTIV_CH_A:
 				//дополнительно проверяем на синхронность каналов
 				switch(flag_sinch_ch){
-						case 0:
+						case SINKH_OFF:
 							GPIO_SetBits(LED2_PORT, LED2);
 							ChannelAOFF();
-							if(GetGTimer(GTIMER2) >KEY_DELAY){
+							if(flag_z_switch_crash){
 								ChannelBON();
 								GPIO_ResetBits(LED2_PORT, LED2);
-								StopGTimer(GTIMER2);
 								}
 							break;
-						case 1:
+						case SINKH_ON:
 							GPIO_SetBits(LED2_PORT, LED2);
 							ChannelAOFF();
 							ChannelBON();
@@ -308,7 +306,7 @@ void SwitchChannel(void){
 							break;
 					}
 				break;
-			case 2:
+			case ACTIV_CH_B:
 				//тут ничего не делаем
 				break;
 			default:

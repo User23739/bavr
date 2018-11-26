@@ -9,7 +9,7 @@
 
 
 //----глобальная переменная
-short flag_priori_chann_manual = 0;			// 0 - канал А; 1 - канал В.
+short flag_priori_chann_manual = CHANNAL_A;			//перменная приоритета каналла
 
 
 void InitGPIO(void){
@@ -38,12 +38,12 @@ void InitGPIO(void){
 }
 
 void ButControl(void){
-	uint8_t bit = 0;
+	short bit = 0;
 	bit = GPIO_ReadInputDataBit(BUT1_PORT, BUT1);
-	if(bit != 0){
-		flag_priori_chann_manual = 0;
+	if(!bit){
+		flag_priori_chann_manual = CHANNAL_A;
 	}
 	else{
-	flag_priori_chann_manual = 1;
+		flag_priori_chann_manual = CHANNAL_B;
 	}
 }

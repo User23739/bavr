@@ -7,6 +7,8 @@
 //extern short flag_switch_B;
 /*----Глобальные переменные------------*/
 short flag_aktiv_channel = 0;				// 0-оба откл; 1-вкл А; 2-вкл В;
+extern short flag_z_switch;
+extern short flag_sinch_ch;
 
 
 void RELAY_Init( void ){
@@ -101,7 +103,7 @@ void InitKey(void){
 
 void ChannelAON(void){
 		/*Включаемм транзисторы */
-		//1
+/*	if (flag_sinch_ch){*/
 		GPIO_SetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
 		//2
 		GPIO_SetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
@@ -119,6 +121,30 @@ void ChannelAON(void){
 		//3
 		GPIO_ResetBits(RELAY_3_PORT_OFF, RELAY_3_PIN_OFF);
 		GPIO_SetBits(RELAY_3_PORT_ON, RELAY_3_PIN_ON);
+/*	}
+	else{
+		if(flag_z_switch[0]){
+				//1
+				GPIO_SetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
+				//2
+				GPIO_SetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
+				//3
+				GPIO_SetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
+				flag_aktiv_channel = 1;
+
+			/*Включаем реле*/
+				//1
+/*				GPIO_ResetBits(RELAY_1_PORT_OFF, RELAY_1_PIN_OFF);
+				GPIO_SetBits(RELAY_1_PORT_ON, RELAY_1_PIN_ON);
+				//2
+				GPIO_ResetBits(RELAY_2_PORT_OFF, RELAY_2_PIN_OFF);
+				GPIO_SetBits(RELAY_2_PORT_ON, RELAY_2_PIN_ON);
+				//3
+				GPIO_ResetBits(RELAY_3_PORT_OFF, RELAY_3_PIN_OFF);
+				GPIO_SetBits(RELAY_3_PORT_ON, RELAY_3_PIN_ON);
+			}
+	}
+*/
 
 
 }
@@ -127,6 +153,7 @@ void ChannelAON(void){
 
 void ChannelBON(void){
 		/*Включаемм транзисторы */
+	/*if (flag_sinch_ch){*/
 		//4
 		GPIO_SetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
 		//5
@@ -146,6 +173,30 @@ void ChannelBON(void){
 		//6
 		GPIO_ResetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
 		GPIO_SetBits(RELAY_6_PORT_ON, RELAY_6_PIN_ON);
+/*	}
+	else{
+		if(flag_z_switch[1]){
+			//4
+			GPIO_SetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
+			//5
+			GPIO_SetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
+			//6
+			GPIO_SetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
+			flag_aktiv_channel = 2;
+
+
+		/*Включаем реле*/
+			//4
+/*			GPIO_ResetBits(RELAY_4_PORT_OFF, RELAY_4_PIN_OFF);
+			GPIO_SetBits(RELAY_4_PORT_ON, RELAY_4_PIN_ON);
+			//5
+			GPIO_ResetBits(RELAY_5_PORT_OFF, RELAY_5_PIN_OFF);
+			GPIO_SetBits(RELAY_5_PORT_ON, RELAY_5_PIN_ON);
+			//6
+			GPIO_ResetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
+			GPIO_SetBits(RELAY_6_PORT_ON, RELAY_6_PIN_ON);
+			}
+	}*/
 
 }
 
