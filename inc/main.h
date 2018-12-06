@@ -45,6 +45,7 @@
 /*----Глобальные константы-------*/
 #define CHANN_W 7  						//количество рабочих каналов
 #define KEY_DELAY 60 				 	//задержка на включение ключей
+#define KEY_STAT_SW_DELAY 4
 #define STOP_RELEY_TIMERS 10000			//защита от переполнения таймеров
 #define BUFER_CIZE 320 					//размер накопительног буфера
 #define QUANT_POINT 0.00025				//единица времени квантования
@@ -55,6 +56,12 @@
 #define ACTIV_CH_B 2
 #define SINKH_OFF 0
 #define SINKH_ON 1
+#define KEY_STAT_SW_RELAY 0 					//тип ключа статик свитч+реле
+#define KEY_STAT_SW 1 						//тип ключа статик свитч
+#define KEY_RELAY 2 						//тип ключа реле
+#define KEY_STAT_SW_RELAY_POL 3 					//тип ключа статик свитч+реле
+#define STAT_SW_DELAY 400
+#define STAT_RELAY_DELAY 200
 
 
 

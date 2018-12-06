@@ -34,6 +34,7 @@ extern short flag_aktiv_channel;
 extern float buff_chan[CHANN_W][BUFER_CIZE];
 extern int a[CHANN_W];
 extern float rezult_true_rms[CHANN_W];						//переменная для хранения значений напряжения.
+extern short key;
 
 
 
@@ -108,6 +109,7 @@ float SIN_A_ref[] = {27, 53, 79, 104, 129, 153, 176, 198, 219, 238, 256,
 float shift10 = 34;
 float shift15 = 51;
 float shift20 = 68;
+float shift = 34;                   //дефолтные значения
 
 
 short int flag_channel[CHANN_W] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
@@ -454,6 +456,37 @@ void PhaseRot(float *vol){
 
 	flag_phase_rot;
 }
+void MbRead(void){
+
+
+	switch(reg_data[40]){
+			case KEY_STAT_SW_RELAY:
+				key = KEY_STAT_SW_RELAY;
+				break;
+			case KEY_STAT_SW:
+				key = KEY_STAT_SW;
+				break;
+			case KEY_RELAY:
+				key = KEY_RELAY;
+				break;
+			default:
+				break;
+		}
+	switch(reg_data[41]){
+		case 0:
+			shift = shift10;
+			break;
+		case 1:
+			shift = shift15;
+			break;
+		case 2:
+			shift = shift20;
+			break;
+		default:
+			break;
+	}
+
+}
 
 void MbWrite(void){
 	reg_data[0] = flag_sinch_ch;
@@ -461,6 +494,8 @@ void MbWrite(void){
 	reg_data[2] = status_chann_B;
 	reg_data[3] = flag_priori_chann_manual;
 	reg_data[4] = flag_aktiv_channel;
+	reg_data[5] = key;
+	reg_data[6] = shift;
 
 
 
@@ -552,7 +587,7 @@ void SinCompar(float *vol, float shift){
 
 /*Функция контроллер*/
 void Control(){
-
+	//shift = shift10;
 	//TransRawDataToBuffer(&data_chan[0]);			//тестовая функция для проверки данных от ацп
 	TransInData();									//преобразование данных в удобный вид// функция работает правильно
 	//------------------функции для теста, перед их включением необходимо закоментировать функции: ADC_DMA_Init();// TransInData();
@@ -565,7 +600,7 @@ void Control(){
 	Freq();
 	FreqCompar();
 	//SinChanAB();
-	SinCompar(&real_tmp_chan[0], shift20);			//Сравнение синусоид
+	SinCompar(&real_tmp_chan[0], shift);			//Сравнение синусоид
 	ChannelStatus();								//Опрос состояния каналов
 	FastSwitch(&real_tmp_chan[0]);
 	SwitchChannel();								//Управление переключениями каналов
@@ -596,10 +631,13 @@ int main(void){
 
 	while(1){
 		//GPIO_SetBits(LED2_PORT, LED2);
+		MbRead();
 		ButControl();
 		TrueRMS();
 		MbWrite();
 		do_modbus();
+		PulsOffPolRelay();
+		PulsOffStatSwitch();
 		//GPIO_ResetBits(LED2_PORT, LED2);
 
 	}

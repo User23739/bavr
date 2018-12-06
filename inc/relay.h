@@ -66,10 +66,16 @@
 
 void RELAY_Init( void );
 void InitKey(void);
-void ChannelAON(void);
-void ChannelBON(void);
-void ChannelAOFF(void);
-void ChannelBOFF(void);
+void ChannelAOnSS(void);
+void ChannelAOnRelay(void);
+void ChannelBOnSS(void);
+void ChannelBOnRelay(void);
+void ChannelAOffSS(void);
+void ChannelAOffRelay(void);
+void ChannelBOffSS(void);
+void ChannelBOffRelay(void);
+void PulsOffPolRelay(void);
+void PulsOffStatSwitch(void);
 
 
 

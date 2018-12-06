@@ -10,7 +10,7 @@
 
 
 
-unsigned short reg_data[30];
+unsigned short reg_data[50];
 
 #define MaxLenRecBuf 250//pазмер буфера принимаемых данных
 #define MaxLenTrBuf 250 //pазмер буфера передаваемых данных

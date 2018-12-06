@@ -17,8 +17,9 @@ char GTStates[MAX_GTIMERS]; // Массив состояний таймеров
 
 void InitGTimers(void){		//Инициализация глобальных таймеров
 	char i;
-	for(i=0; i<MAX_GTIMERS; i++)
+	for(i=0; i<MAX_GTIMERS; i++){
 		GTStates[i] = TIMER_STOPPED;
+	}
 }
 
 void StartGTimer(unsigned int GTimerID){   //Запуск таймера
@@ -38,8 +39,15 @@ unsigned int GetGTimer(unsigned int GTimerID){   //Получение текущего значения т
 
 void ProcessTimers(void){		//обработчик прерываний
 	char i;
-	for(i=0; i<MAX_GTIMERS; i++)
-		if(GTStates[i] == TIMER_RUNNING)
-			GTimers[i]++;
+	for(i=0; i<MAX_GTIMERS; i++){
+		if(GTStates[i] == TIMER_RUNNING){
+			if(GTimers[i] < 4294967294){
+				GTimers[i]++;
+			}
+			else{
+				GTimers[i] = 0;
+			}
+		}
 
+	}
 }
