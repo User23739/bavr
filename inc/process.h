@@ -15,6 +15,7 @@ void TransInData(void);
 void BuffData(float *vol);
 void ChannelStatus(void);
 void SwitchChannel(void);
+void InitStatSwRelaySwitch();
 void StatSwRelaySwitch(void);
 void StatSwSwitch(void);
 void RelaySwitch(void);

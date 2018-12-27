@@ -22,6 +22,30 @@ extern short flag_freq[2];
 extern short flag_sinch_ch;
 extern short flag_z_switch_crash;
 extern short flag_z_switch;
+extern unsigned int key_delay;
+extern unsigned int ss_key_delay;
+
+//////////////////////////////////////////////////////////////////
+// Блок описания констант первого входя
+#define MAX_BLOK 4
+#define TRUE 1
+#define FALSE 0
+#define BLOK_1 0
+#define BLOK_2 1
+#define BLOK_3 2
+#define BLOK_4 3
+
+
+// Локальные переменные
+uint8_t first_entry[MAX_BLOK];				//текущее состояние
+//static char prev_main_state;		//предыдущее состояние
+//static char main_state_return;		//состояние, в которое нужно вернуться после какого-либо события
+//static char entry;					//флаг первого вхождения в состояние
+
+
+
+///////////////////////////////////////////////////////////////////////
+
 
 
 
@@ -34,9 +58,6 @@ extern short flag_z_switch;
 #define TRU_C_CH 2000     //колличсество положительных отсчетов для включения
 #define BUFER_CIZE 320    //размер буфера
 #define DEPTH 79		 //глубина интеграции для РМС
-
-
-
 
 //переменные для хранения текущих значений измерения
 float rezult_true_rms[CHANN_W] = {0};
@@ -157,10 +178,10 @@ void SwitchChannel(void){
 			StatSwRelaySwitch();
 			break;
 		case KEY_STAT_SW:
-			StatSwSwitch();
+			//StatSwSwitch();
 			break;
 		case KEY_RELAY:
-			RelaySwitch();
+			//RelaySwitch();
 			break;
 		/*case KEY_STAT_SW_RELAY_POL:
 			StatSwRelayPolSwitch();
@@ -171,50 +192,63 @@ void SwitchChannel(void){
 
 }
 
+
+
 void StatSwRelaySwitch(void){
 
+
 	 if((status_chann_A)&&(status_chann_B)){
+
 		switch (flag_priori_chann_manual){
+
 				case CHANNAL_A:
 					switch(flag_aktiv_channel){
 						case ACTIV_OFF: //включение с ноля
-							GPIO_SetBits(LED2_PORT, LED2);
-							if(GetGTimer(GTIMER1) >KEY_DELAY){
-								ChannelAOnSS();
-								ChannelAOnRelay();
-								GPIO_ResetBits(LED2_PORT, LED2);
-								StopGTimer(GTIMER1);
+							StartGTimer(GT_INIT_KEY);
+							if(GetGTimer(GT_INIT_KEY) >key_delay){
+								ChannelAOnSS(TIMER_ON);
+								ChannelAOnRelay(TIMER_ON);
+								StopGTimer(GT_INIT_KEY);
 								}
 							break;
-						case ACTIV_CH_A: //ничего не делает (как резерв оттключает транзристор)
+						case ACTIV_CH_A: //ничего не делает
 
 							break;
 						case ACTIV_CH_B: //переход с канала Б
 							switch(flag_sinch_ch){
 									case SINKH_OFF:
-										GPIO_SetBits(LED2_PORT, LED2);
-										ChannelBOnSS();
-										ChannelBOffRelay();
-										if(GetGTimer(GTIMER1) >KEY_DELAY){
-											ChannelBOffSS();
-											if(GetGTimer(GT_OFF_SS_B) >KEY_STAT_SW_DELAY){
-												ChannelAOnSS();
-												ChannelAOnRelay();
-												GPIO_ResetBits(LED2_PORT, LED2);
-												StopGTimer(GT_OFF_SS_B);
+										if (!first_entry[BLOK_1]){
+											ChannelBOnSS(TIMER_OFF);
+											ChannelBOffRelay(TIMER_ON);
+											StartGTimer(GT_KEY_CH_B);
+											first_entry[BLOK_1] = TRUE;
+										}
+										if(GetGTimer(GT_KEY_CH_B) >= key_delay){
+											if(!first_entry[BLOK_2]){
+												ChannelBOffSS();
+												PauseGTimer(GT_KEY_CH_B);
+												StartGTimer(GT_SS_CH_B);
+												first_entry[BLOK_2] = TRUE;
 											}
-											StopGTimer(GTIMER1);
+											if(GetGTimer(GT_SS_CH_B) >ss_key_delay){
+												ChannelAOnSS(TIMER_ON);
+												ChannelAOnRelay(TIMER_ON);
+												StopGTimer(GT_KEY_CH_B);
+												StopGTimer(GT_SS_CH_B);
+												first_entry[BLOK_1] = FALSE;
+												first_entry[BLOK_2] = FALSE;
+											}
+
 										}
 
 										break;
 									case SINKH_ON:
-										GPIO_SetBits(LED2_PORT, LED2);
 										ChannelBOffSS();
-										ChannelBOffRelay();
-										ChannelAOnSS();
-										ChannelAOnRelay();
-										GPIO_ResetBits(LED2_PORT, LED2);
-										break;
+										ChannelBOffRelay(TIMER_ON);
+										ChannelAOnSS(TIMER_ON);
+										ChannelAOnRelay(TIMER_ON);
+
+									break;
 									default:
 										break;
 								}
@@ -226,40 +260,48 @@ void StatSwRelaySwitch(void){
 				case CHANNAL_B:
 					switch(flag_aktiv_channel){
 						case ACTIV_OFF:
-							GPIO_SetBits(LED2_PORT, LED2);
-							if(GetGTimer(GTIMER2) >KEY_DELAY){
-								ChannelBOnSS();
-								ChannelBOnRelay();
-								StopGTimer(GTIMER2);
-							GPIO_ResetBits(LED2_PORT, LED2);
+							StartGTimer(GT_INIT_KEY);
+							if(GetGTimer(GT_INIT_KEY) >key_delay){
+								ChannelBOnSS(TIMER_ON);
+								ChannelBOnRelay(TIMER_ON);
+								StopGTimer(GT_INIT_KEY);
+
 							}
 							break;
 						case ACTIV_CH_A:
 							switch(flag_sinch_ch){
 								case SINKH_OFF:
-									GPIO_SetBits(LED2_PORT, LED2);
-									ChannelAOnSS();
-									ChannelAOffRelay();
-									if(GetGTimer(GTIMER2) >KEY_DELAY){
-										ChannelAOffSS();
-										if(GetGTimer(GT_OFF_SS_A) >KEY_STAT_SW_DELAY){
-											ChannelBOnSS();
-											ChannelBOnRelay();
-											GPIO_ResetBits(LED2_PORT, LED2);
-											StopGTimer(GT_OFF_SS_A);
+									if (!first_entry[BLOK_3]){
+										ChannelAOnSS(TIMER_OFF);
+										ChannelAOffRelay(TIMER_ON);
+										StartGTimer(GT_KEY_CH_A);
+										first_entry[BLOK_3] = TRUE;
+									}
+									if(GetGTimer(GT_KEY_CH_A) >= key_delay){
+										if(!first_entry[BLOK_4]){
+											ChannelAOffSS();
+											StartGTimer(GT_SS_CH_A);
+											first_entry[BLOK_4] = TRUE;
 										}
-										StopGTimer(GTIMER2);
+										if(GetGTimer(GT_SS_CH_A) >ss_key_delay){
+											ChannelBOnSS(TIMER_ON);
+											ChannelBOnRelay(TIMER_ON);
+											StopGTimer(GT_KEY_CH_A);
+											StopGTimer(GT_SS_CH_A);
+											first_entry[BLOK_3] = FALSE;
+											first_entry[BLOK_4] = FALSE;
+										}
+
 									}
 
 									break;
 								case SINKH_ON:
-									GPIO_SetBits(LED2_PORT, LED2);
-									ChannelAOffSS();
-									ChannelAOffRelay();
-									ChannelBOnSS();
-									ChannelBOnRelay();
-									GPIO_ResetBits(LED2_PORT, LED2);
-									break;
+									ChannelBOffSS();
+									ChannelBOffRelay(TIMER_ON);
+									ChannelAOnSS(TIMER_ON);
+									ChannelAOnRelay(TIMER_ON);
+
+								break;
 								default:
 									break;
 								}
@@ -281,42 +323,63 @@ void StatSwRelaySwitch(void){
 	if((status_chann_A)&&(!status_chann_B)){
 		switch(flag_aktiv_channel){
 			case ACTIV_OFF:
-				GPIO_SetBits(LED2_PORT, LED2);
-				if(GetGTimer(GTIMER1) >KEY_DELAY){
-					ChannelAOnSS();
-					ChannelAOnRelay();
-					GPIO_ResetBits(LED2_PORT, LED2);
-					StopGTimer(GTIMER1);
-					}
+			StartGTimer(GT_INIT_KEY);
+			if(GetGTimer(GT_INIT_KEY) >key_delay){
+				ChannelAOnSS(TIMER_ON);
+
+				ChannelAOnRelay(TIMER_ON);
+
+				StopGTimer(GT_INIT_KEY);
+				}
 				break;
 			case ACTIV_CH_A:
 
 				break;
 			case ACTIV_CH_B:
 				switch(flag_sinch_ch){
-						case SINKH_OFF:
-							GPIO_SetBits(LED2_PORT, LED2);
+					case SINKH_OFF:
+						if (!first_entry[BLOK_1]){
 							ChannelBOffSS();
-							ChannelBOffRelay();
-							if(GetGTimer(GTIMER1) >KEY_DELAY){
-								ChannelAOnSS();
-								ChannelAOnRelay();
-								GPIO_ResetBits(LED2_PORT, LED2);
+							ChannelBOffRelay(TIMER_ON);
 
-								StopGTimer(GTIMER1);
+							StartGTimer(GT_KEY_CH_B);
+							first_entry[BLOK_1] = TRUE;
+						}
+
+						if(GetGTimer(GT_KEY_CH_B) >key_delay){
+
+
+							if(!first_entry[BLOK_2]){
+								ChannelBOffSS();
+								StartGTimer(GT_SS_CH_B);
+								first_entry[BLOK_2] = TRUE;
 							}
-							break;
-						case SINKH_ON:
-							GPIO_SetBits(LED2_PORT, LED2);
-							ChannelBOffSS();
-							ChannelBOffRelay();
-							ChannelAOnSS();
-							ChannelAOnRelay();
-							GPIO_ResetBits(LED2_PORT, LED2);
-							break;
-						default:
-							break;
-					}
+							if(GetGTimer(GT_SS_CH_B) >ss_key_delay){
+								ChannelAOnSS(TIMER_ON);
+
+								ChannelAOnRelay(TIMER_ON);
+
+								StopGTimer(GT_KEY_CH_B);
+								StopGTimer(GT_SS_CH_B);
+								first_entry[BLOK_1] = FALSE;
+								first_entry[BLOK_2] = FALSE;
+							}
+
+						}
+
+						break;
+					case SINKH_ON:
+						ChannelBOffSS();
+						ChannelBOffRelay(TIMER_ON);
+
+						ChannelAOnSS(TIMER_ON);
+
+						ChannelAOnRelay(TIMER_ON);
+
+					break;
+					default:
+						break;
+				}
 				break;
 			default:
 				break;
@@ -326,36 +389,57 @@ void StatSwRelaySwitch(void){
 	if((!status_chann_A)&&(status_chann_B)){
 		switch(flag_aktiv_channel){
 			case ACTIV_OFF:
-				GPIO_SetBits(LED2_PORT, LED2);
-				if(GetGTimer(GTIMER2) >KEY_DELAY){
-					ChannelBOnSS();
-					ChannelBOnRelay();
-					GPIO_ResetBits(LED2_PORT, LED2);
-					StopGTimer(GTIMER2);
+				StartGTimer(GT_INIT_KEY);
+				if(GetGTimer(GT_INIT_KEY) >key_delay){
+					ChannelBOnSS(TIMER_ON);
+
+					ChannelBOnRelay(TIMER_ON);
+
+					StopGTimer(GT_INIT_KEY);
+
 				}
 				break;
 			case ACTIV_CH_A:
 				switch(flag_sinch_ch){
 					case SINKH_OFF:
-						GPIO_SetBits(LED2_PORT, LED2);
-						ChannelAOffSS();
-						ChannelAOffRelay();
-						if(GetGTimer(GTIMER2) >KEY_DELAY){
-							ChannelBOnSS();
-							ChannelBOnRelay();
-							GPIO_ResetBits(LED2_PORT, LED2);
-							StopGTimer(GTIMER2);
+						if (!first_entry[BLOK_3]){
+							ChannelAOffSS();
+							ChannelAOffRelay(TIMER_ON);
+
+							StartGTimer(GT_KEY_CH_A);
+							first_entry[BLOK_3] = TRUE;
+						}
+
+						if(GetGTimer(GT_KEY_CH_A) >key_delay){
+							if(!first_entry[BLOK_4]){
+								ChannelAOffSS();
+								StartGTimer(GT_SS_CH_A);
+								first_entry[BLOK_4] = TRUE;
+							}
+							if(GetGTimer(GT_SS_CH_A) >ss_key_delay){
+								ChannelBOnSS(TIMER_ON);
+
+								ChannelBOnRelay(TIMER_ON);
+
+								StopGTimer(GT_KEY_CH_A);
+								StopGTimer(GT_SS_CH_A);
+								first_entry[BLOK_3] = FALSE;
+								first_entry[BLOK_4] = FALSE;
+
+							}
+
 						}
 
 						break;
 					case SINKH_ON:
-						GPIO_SetBits(LED2_PORT, LED2);
 						ChannelAOffSS();
-						ChannelAOffRelay();
-						ChannelBOnSS();
-						ChannelBOnRelay();
-						GPIO_ResetBits(LED2_PORT, LED2);
-						break;
+						ChannelAOffRelay(TIMER_ON);
+
+						ChannelBOnSS(TIMER_ON);
+
+						ChannelBOnRelay(TIMER_ON);
+
+					break;
 					default:
 						break;
 					}
@@ -368,639 +452,38 @@ void StatSwRelaySwitch(void){
 		}
 
 	}
-	if((!status_chann_A)&&(!status_chann_B)){
-		ChannelAOffSS();
-		ChannelAOffRelay();
-		ChannelBOffSS();
-		ChannelBOffRelay();
-		flag_aktiv_channel = 0;
 
-	}
-	if(GetGTimer(GTIMER1) >STOP_RELEY_TIMERS){
-		StopGTimer(GTIMER1);
-	}
-	if(GetGTimer(GTIMER2) >STOP_RELEY_TIMERS){
-		StopGTimer(GTIMER2);
+
+	if((!status_chann_A)&&(!status_chann_B)){
+		if(flag_aktiv_channel != 0){
+			ChannelAOffSS();
+			ChannelAOffRelay(TIMER_ON);
+
+			ChannelBOffSS();
+			ChannelBOffRelay(TIMER_ON);
+
+			flag_aktiv_channel = 0;
+		}
+
 	}
 
 }
 
 /*void StatSwRelayPolSwitch(void){
 
-	if((status_chann_A)&&(status_chann_B)){
-		switch (flag_priori_chann_manual){
-				case CHANNAL_A:
-					switch(flag_aktiv_channel){
-						case ACTIV_OFF: //включение с ноля
-							GPIO_SetBits(LED2_PORT, LED2);
-							if(GetGTimer(GTIMER1) >KEY_DELAY){
-								ChannelAOnSS();
-								ChannelAOnRelay();
-								GPIO_ResetBits(LED2_PORT, LED2);
-								StopGTimer(GTIMER1);
-								}
-							break;
-						case ACTIV_CH_A: //ничего не делает (как резерв оттключает транзристор)
-							if(GetGTimer(GTIMER17) >STAT_SW_DELAY){
-								ChannelAOffSS();
-								StopGTimer(GTIMER17);
-							}
-							break;
-						case ACTIV_CH_B: //переход с канала Б
-							switch(flag_sinch_ch){
-									case SINKH_OFF:
-										GPIO_SetBits(LED2_PORT, LED2);
-										ChannelBOnSS();
-										ChannelBOffRelay();
-										if(GetGTimer(GTIMER1) >KEY_DELAY){
-											ChannelBOffSS();
-											if(flag_z_switch){
-												ChannelAOnSS();
-												ChannelAOnRelay();
-												GPIO_ResetBits(LED2_PORT, LED2);
-											}
-											StopGTimer(GTIMER1);
-										}
 
-										break;
-									case SINKH_ON:
-										GPIO_SetBits(LED2_PORT, LED2);
-										ChannelBOffSS();
-										ChannelBOffRelay();
-										ChannelAOnSS();
-										ChannelAOnRelay();
-										GPIO_ResetBits(LED2_PORT, LED2);
-										break;
-									default:
-										break;
-								}
-							break;
-						default:
-							break;
-						}
-					break;
-				case CHANNAL_B:
-					switch(flag_aktiv_channel){
-						case ACTIV_OFF:
-							GPIO_SetBits(LED2_PORT, LED2);
-							if(GetGTimer(GTIMER2) >KEY_DELAY){
-								ChannelBOnSS();
-								ChannelBOnRelay();
-								StopGTimer(GTIMER2);
-							GPIO_ResetBits(LED2_PORT, LED2);
-							}
-							break;
-						case ACTIV_CH_A:
-							switch(flag_sinch_ch){
-								case SINKH_OFF:
-									GPIO_SetBits(LED2_PORT, LED2);
-									ChannelAOnSS();
-									ChannelAOffRelay();
-									if(GetGTimer(GTIMER2) >KEY_DELAY){
-										ChannelAOffSS();
-										if(flag_z_switch){
-											ChannelBOnSS();
-											ChannelBOnRelay();
-											GPIO_ResetBits(LED2_PORT, LED2);
-										}
-										StopGTimer(GTIMER2);
-									}
-
-									break;
-								case SINKH_ON:
-									GPIO_SetBits(LED2_PORT, LED2);
-									ChannelAOffSS();
-									ChannelAOffRelay();
-									ChannelBOnSS();
-									ChannelBOnRelay();
-									GPIO_ResetBits(LED2_PORT, LED2);
-									break;
-								default:
-									break;
-								}
-							break;
-						case ACTIV_CH_B:
-							if(GetGTimer(GTIMER18) >STAT_SW_DELAY){
-								ChannelBOffSS();
-								StopGTimer(GTIMER18);
-							}
-							break;
-						default:
-							break;
-					}
-					break;
-				default:
-					break;
-
-
-			}
-	}
-
-	if((status_chann_A)&&(!status_chann_B)){
-		switch(flag_aktiv_channel){
-			case ACTIV_OFF:
-				GPIO_SetBits(LED2_PORT, LED2);
-				if(GetGTimer(GTIMER1) >KEY_DELAY){
-					ChannelAOnSS();
-					ChannelAOnRelay();
-					GPIO_ResetBits(LED2_PORT, LED2);
-					StopGTimer(GTIMER1);
-					}
-				break;
-			case ACTIV_CH_A:
-				if(GetGTimer(GTIMER17) >STAT_SW_DELAY){
-					ChannelAOffSS();
-					StopGTimer(GTIMER17);
-				}
-				break;
-			case ACTIV_CH_B:
-				switch(flag_sinch_ch){
-						case SINKH_OFF:
-							GPIO_SetBits(LED2_PORT, LED2);
-							ChannelBOnSS();
-							ChannelBOffRelay();
-							if(GetGTimer(GTIMER1) >KEY_DELAY){
-								ChannelBOffSS();
-								if(flag_z_switch_crash){
-									ChannelAOnSS();
-									ChannelAOnRelay();
-									GPIO_ResetBits(LED2_PORT, LED2);
-								}
-								StopGTimer(GTIMER1);
-							}
-							break;
-						case SINKH_ON:
-							GPIO_SetBits(LED2_PORT, LED2);
-							ChannelBOffSS();
-							ChannelBOffRelay();
-							ChannelAOnSS();
-							ChannelAOnRelay();
-							GPIO_ResetBits(LED2_PORT, LED2);
-							break;
-						default:
-							break;
-					}
-				break;
-			default:
-				break;
-		}
-
-	}
-	if((!status_chann_A)&&(status_chann_B)){
-		switch(flag_aktiv_channel){
-			case ACTIV_OFF:
-				GPIO_SetBits(LED2_PORT, LED2);
-				if(GetGTimer(GTIMER2) >KEY_DELAY){
-					ChannelBOnSS();
-					ChannelBOnRelay();
-					GPIO_ResetBits(LED2_PORT, LED2);
-					StopGTimer(GTIMER2);
-				}
-				break;
-			case ACTIV_CH_A:
-				switch(flag_sinch_ch){
-					case SINKH_OFF:
-						GPIO_SetBits(LED2_PORT, LED2);
-						ChannelAOnSS();
-						ChannelAOffRelay();
-						if(GetGTimer(GTIMER2) >KEY_DELAY){
-							ChannelAOffSS();
-							if(flag_z_switch_crash){
-								ChannelBOnSS();
-								ChannelBOnRelay();
-								GPIO_ResetBits(LED2_PORT, LED2);
-							}
-							StopGTimer(GTIMER2);
-						}
-
-						break;
-					case SINKH_ON:
-						GPIO_SetBits(LED2_PORT, LED2);
-						ChannelAOffSS();
-						ChannelAOffRelay();
-						ChannelBOnSS();
-						ChannelBOnRelay();
-						GPIO_ResetBits(LED2_PORT, LED2);
-						break;
-					default:
-						break;
-					}
-				break;
-			case ACTIV_CH_B:
-				if(GetGTimer(GTIMER18) >STAT_SW_DELAY){
-					ChannelBOffSS();
-					StopGTimer(GTIMER18);
-				}
-				break;
-			default:
-				break;
-		}
-
-	}
-	if((!status_chann_A)&&(!status_chann_B)){
-		ChannelAOffSS();
-		ChannelAOffRelay();
-		ChannelBOffSS();
-		ChannelBOffRelay();
-		flag_aktiv_channel = 0;
-
-	}
-	if(GetGTimer(GTIMER1) >STOP_RELEY_TIMERS){
-		StopGTimer(GTIMER1);
-	}
-	if(GetGTimer(GTIMER2) >STOP_RELEY_TIMERS){
-		StopGTimer(GTIMER2);
-	}
-	if(GetGTimer(GTIMER17) >STOP_RELEY_TIMERS){
-		StopGTimer(GTIMER17);
-	}
-	if(GetGTimer(GTIMER18) >STOP_RELEY_TIMERS){
-		StopGTimer(GTIMER18);
-	}
 }
 */
-void StatSwSwitch(void){
+/*void StatSwSwitch(void){
 
 
-	if((status_chann_A)&&(status_chann_B)){
-			switch (flag_priori_chann_manual){
-					case CHANNAL_A:
-						switch(flag_aktiv_channel){
-							case ACTIV_OFF: //включение с ноля
-								GPIO_SetBits(LED2_PORT, LED2);
-								if(GetGTimer(GTIMER1) >KEY_STAT_SW_DELAY){
-									ChannelAOnSS();
-									GPIO_ResetBits(LED2_PORT, LED2);
-									StopGTimer(GTIMER1);
-									}
-								break;
-							case ACTIV_CH_A: //ничего не делает (как резерв оттключает транзристор)
 
-								break;
-							case ACTIV_CH_B: //переход с канала Б
-								switch(flag_sinch_ch){
-										case SINKH_OFF:
-											GPIO_SetBits(LED2_PORT, LED2);
-											ChannelBOffSS();
-											if(GetGTimer(GTIMER20) >KEY_STAT_SW_DELAY){
-
-													ChannelAOnSS();
-													GPIO_ResetBits(LED2_PORT, LED2);
-
-												StopGTimer(GTIMER20);
-											}
-
-											break;
-										case SINKH_ON:
-											GPIO_SetBits(LED2_PORT, LED2);
-											ChannelBOffSS();
-											ChannelAOnSS();
-											GPIO_ResetBits(LED2_PORT, LED2);
-											break;
-										default:
-											break;
-									}
-								break;
-							default:
-								break;
-							}
-						break;
-					case CHANNAL_B:
-						switch(flag_aktiv_channel){
-							case ACTIV_OFF:
-								GPIO_SetBits(LED2_PORT, LED2);
-								if(GetGTimer(GTIMER2) >KEY_STAT_SW_DELAY){
-									ChannelBOnSS();
-									StopGTimer(GTIMER2);
-								GPIO_ResetBits(LED2_PORT, LED2);
-								}
-								break;
-							case ACTIV_CH_A:
-								switch(flag_sinch_ch){
-									case SINKH_OFF:
-										GPIO_SetBits(LED2_PORT, LED2);
-										ChannelAOffSS();
-										if(GetGTimer(GTIMER19) >KEY_STAT_SW_DELAY){
-
-												ChannelBOnSS();
-												GPIO_ResetBits(LED2_PORT, LED2);
-
-											StopGTimer(GTIMER19);
-										}
-
-										break;
-									case SINKH_ON:
-										GPIO_SetBits(LED2_PORT, LED2);
-										ChannelAOffSS();
-										ChannelBOnSS();
-										GPIO_ResetBits(LED2_PORT, LED2);
-										break;
-									default:
-										break;
-									}
-								break;
-							case ACTIV_CH_B:
-
-								break;
-							default:
-								break;
-						}
-						break;
-					default:
-						break;
-
-
-				}
-		}
-
-		if((status_chann_A)&&(!status_chann_B)){
-			switch(flag_aktiv_channel){
-				case ACTIV_OFF:
-					GPIO_SetBits(LED2_PORT, LED2);
-					if(GetGTimer(GTIMER20) >KEY_STAT_SW_DELAY){
-						ChannelAOnSS();
-						GPIO_ResetBits(LED2_PORT, LED2);
-						StopGTimer(GTIMER20);
-						}
-					break;
-				case ACTIV_CH_A:
-
-					break;
-				case ACTIV_CH_B:
-					switch(flag_sinch_ch){
-						case SINKH_OFF:
-							GPIO_SetBits(LED2_PORT, LED2);
-							ChannelBOffSS();
-							if(GetGTimer(GTIMER20) >KEY_STAT_SW_DELAY){
-
-									ChannelAOnSS();
-									GPIO_ResetBits(LED2_PORT, LED2);
-
-								StopGTimer(GTIMER20);
-							}
-
-							break;
-						case SINKH_ON:
-							GPIO_SetBits(LED2_PORT, LED2);
-							ChannelBOffSS();
-							ChannelAOnSS();
-							GPIO_ResetBits(LED2_PORT, LED2);
-							break;
-						default:
-							break;
-					}
-					break;
-				default:
-					break;
-				}
-
-		}
-		if((!status_chann_A)&&(status_chann_B)){
-			switch(flag_aktiv_channel){
-				case ACTIV_OFF:
-					GPIO_SetBits(LED2_PORT, LED2);
-					if(GetGTimer(GTIMER19) >KEY_STAT_SW_DELAY){
-						ChannelBOnSS();
-						GPIO_ResetBits(LED2_PORT, LED2);
-						StopGTimer(GTIMER19);
-					}
-					break;
-				case ACTIV_CH_A:
-					switch(flag_sinch_ch){
-						case SINKH_OFF:
-							GPIO_SetBits(LED2_PORT, LED2);
-							ChannelAOffSS();
-							if(GetGTimer(GTIMER19) >KEY_STAT_SW_DELAY){
-
-									ChannelBOnSS();
-									GPIO_ResetBits(LED2_PORT, LED2);
-
-								StopGTimer(GTIMER19);
-							}
-							break;
-						case SINKH_ON:
-							GPIO_SetBits(LED2_PORT, LED2);
-							ChannelAOffSS();
-							ChannelBOnSS();
-							GPIO_ResetBits(LED2_PORT, LED2);
-							break;
-						default:
-							break;
-						}
-					break;
-				case ACTIV_CH_B:
-
-					break;
-				default:
-					break;
-			}
-
-		}
-		if((!status_chann_A)&&(!status_chann_B)){
-			ChannelAOffSS();
-			ChannelBOffSS();
-			flag_aktiv_channel = 0;
-
-		}
-		if(GetGTimer(GTIMER1) >STOP_RELEY_TIMERS){
-			StopGTimer(GTIMER1);
-		}
-		if(GetGTimer(GTIMER2) >STOP_RELEY_TIMERS){
-			StopGTimer(GTIMER2);
-		}
 
 }
 void RelaySwitch(void){
-	if((status_chann_A)&&(status_chann_B)){
-			switch (flag_priori_chann_manual){
-					case CHANNAL_A:
-						switch(flag_aktiv_channel){
-							case ACTIV_OFF: //включение с ноля
-								GPIO_SetBits(LED2_PORT, LED2);
-								if(GetGTimer(GTIMER1) >KEY_DELAY){
-									ChannelAOnRelay();
-									GPIO_ResetBits(LED2_PORT, LED2);
-									StopGTimer(GTIMER1);
-									}
-								break;
-							case ACTIV_CH_A: //ничего не делает (как резерв оттключает транзристор)
-
-								break;
-							case ACTIV_CH_B: //переход с канала Б
-								switch(flag_sinch_ch){
-										case SINKH_OFF:
-											GPIO_SetBits(LED2_PORT, LED2);
-
-											ChannelBOffRelay();
-											if(GetGTimer(GTIMER1) >KEY_DELAY){
-
-													ChannelAOnRelay();
-													GPIO_ResetBits(LED2_PORT, LED2);
-
-												StopGTimer(GTIMER1);
-											}
-
-											break;
-										case SINKH_ON:
-											GPIO_SetBits(LED2_PORT, LED2);
-											ChannelBOffRelay();
-											ChannelAOnRelay();
-											GPIO_ResetBits(LED2_PORT, LED2);
-											break;
-										default:
-											break;
-									}
-								break;
-							default:
-								break;
-							}
-						break;
-					case CHANNAL_B:
-						switch(flag_aktiv_channel){
-							case ACTIV_OFF:
-								GPIO_SetBits(LED2_PORT, LED2);
-								if(GetGTimer(GTIMER2) >KEY_DELAY){
-									ChannelBOnRelay();
-									StopGTimer(GTIMER2);
-								GPIO_ResetBits(LED2_PORT, LED2);
-								}
-								break;
-							case ACTIV_CH_A:
-								switch(flag_sinch_ch){
-									case SINKH_OFF:
-										GPIO_SetBits(LED2_PORT, LED2);
-										ChannelAOffRelay();
-										if(GetGTimer(GTIMER2) >KEY_DELAY){
-
-												ChannelBOnRelay();
-												GPIO_ResetBits(LED2_PORT, LED2);
-
-											StopGTimer(GTIMER2);
-										}
-
-										break;
-									case SINKH_ON:
-										GPIO_SetBits(LED2_PORT, LED2);
-										ChannelAOffRelay();
-										ChannelBOnRelay();
-										GPIO_ResetBits(LED2_PORT, LED2);
-										break;
-									default:
-										break;
-									}
-								break;
-							case ACTIV_CH_B:
-
-								break;
-							default:
-								break;
-						}
-						break;
-					default:
-						break;
 
 
-				}
-		}
-
-		if((status_chann_A)&&(!status_chann_B)){
-			switch(flag_aktiv_channel){
-				case ACTIV_OFF:
-					GPIO_SetBits(LED2_PORT, LED2);
-					if(GetGTimer(GTIMER1) >KEY_DELAY){
-						ChannelAOnRelay();
-						GPIO_ResetBits(LED2_PORT, LED2);
-						StopGTimer(GTIMER1);
-						}
-					break;
-				case ACTIV_CH_A:
-
-					break;
-				case ACTIV_CH_B:
-					switch(flag_sinch_ch){
-							case SINKH_OFF:
-								GPIO_SetBits(LED2_PORT, LED2);
-								ChannelBOffRelay();
-								if(GetGTimer(GTIMER1) >KEY_DELAY){
-
-										ChannelAOnRelay();
-										GPIO_ResetBits(LED2_PORT, LED2);
-
-									StopGTimer(GTIMER1);
-								}
-								break;
-							case SINKH_ON:
-								GPIO_SetBits(LED2_PORT, LED2);
-								ChannelBOffRelay();
-								ChannelAOnRelay();
-								GPIO_ResetBits(LED2_PORT, LED2);
-								break;
-							default:
-								break;
-						}
-					break;
-				default:
-					break;
-			}
-
-		}
-		if((!status_chann_A)&&(status_chann_B)){
-			switch(flag_aktiv_channel){
-				case ACTIV_OFF:
-					GPIO_SetBits(LED2_PORT, LED2);
-					if(GetGTimer(GTIMER2) >KEY_DELAY){
-						ChannelBOnRelay();
-						GPIO_ResetBits(LED2_PORT, LED2);
-						StopGTimer(GTIMER2);
-					}
-					break;
-				case ACTIV_CH_A:
-					switch(flag_sinch_ch){
-						case SINKH_OFF:
-							GPIO_SetBits(LED2_PORT, LED2);
-							ChannelAOffRelay();
-							if(GetGTimer(GTIMER2) >KEY_DELAY){
-
-									ChannelBOnRelay();
-									GPIO_ResetBits(LED2_PORT, LED2);
-
-								StopGTimer(GTIMER2);
-							}
-
-							break;
-						case SINKH_ON:
-							GPIO_SetBits(LED2_PORT, LED2);
-							ChannelAOffRelay();
-							ChannelBOnRelay();
-							GPIO_ResetBits(LED2_PORT, LED2);
-							break;
-						default:
-							break;
-						}
-					break;
-				case ACTIV_CH_B:
-
-					break;
-				default:
-					break;
-			}
-
-		}
-		if((!status_chann_A)&&(!status_chann_B)){
-			ChannelAOffRelay();
-			ChannelBOffRelay();
-			flag_aktiv_channel = 0;
-
-		}
-		if(GetGTimer(GTIMER1) >STOP_RELEY_TIMERS){
-			StopGTimer(GTIMER1);
-		}
-		if(GetGTimer(GTIMER2) >STOP_RELEY_TIMERS){
-			StopGTimer(GTIMER2);
-		}
-
-
-}
+}*/
 
 /*Функция расчета среднеквадратичного значения*/
 void TrueRMS(){

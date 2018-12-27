@@ -7,8 +7,8 @@
 //extern short flag_switch_B;
 /*----Глобальные переменные------------*/
 short flag_aktiv_channel = 0;				// 0-оба откл; 1-вкл А; 2-вкл В;
-extern short flag_z_switch;
-extern short flag_sinch_ch;
+//extern short flag_z_switch;
+//extern short flag_sinch_ch;
 extern short key;
 
 
@@ -63,17 +63,23 @@ void RELAY_Init( void ){
 
 void InitKey(void){
 	ChannelAOffSS();
-	ChannelAOffRelay();
-	ChannelBOffSS();
-	ChannelBOffRelay();
+	ChannelAOffRelay(TIMER_ON);
 
-	StartGTimer(GT_INIT_KEY);
+	ChannelBOffSS();
+	ChannelBOffRelay(TIMER_ON);
+
+	//StartGTimer(GT_INIT_KEY);
+
+
+
 
 	flag_aktiv_channel = 0;							//оба канала отключенны
 }
 
 //-------функция включения канала А---------------------------------------------------------------------
-void ChannelAOnSS(void){
+void ChannelAOnSS(uint8_t status_timer){
+	uint8_t st_timer;
+
 	/*Включаемм транзисторы */
 			//1
 			GPIO_SetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
@@ -81,12 +87,17 @@ void ChannelAOnSS(void){
 			GPIO_SetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
 			//3
 			GPIO_SetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
+			st_timer = status_timer;
+			/// Условия включения таймера
+			if(st_timer) StartGTimer(GT_ON_SS_A);
+			if(!st_timer)ResetGTimer(GT_ON_SS_A);
+
 			flag_aktiv_channel = 1;
-			if (key == KEY_STAT_SW_RELAY) StartGTimer(GT_ON_SS_A); 								//Время работы транзистора при ключах статик свитч + реле
+
 }
 
-void ChannelAOnRelay(void){
-
+void ChannelAOnRelay(uint8_t status_timer){
+	uint8_t st_timer;
 	/*Включаем реле*/
 		//1
 		GPIO_ResetBits(RELAY_1_PORT_OFF, RELAY_1_PIN_OFF);
@@ -97,14 +108,16 @@ void ChannelAOnRelay(void){
 		//3
 		GPIO_ResetBits(RELAY_3_PORT_OFF, RELAY_3_PIN_OFF);
 		GPIO_SetBits(RELAY_3_PORT_ON, RELAY_3_PIN_ON);
-
-		if (key == KEY_STAT_SW_RELAY) StartGTimer(GT_ON_RELAY_A);
+		st_timer = status_timer;
+		/// Условия включения таймера
+		if(st_timer) StartGTimer(GT_ON_RELAY_A);
 
 		flag_aktiv_channel = 1;
 }
 
 //-------функция включения канала B---------------------------------------------------------------------
-void ChannelBOnSS(void){
+void ChannelBOnSS(uint8_t status_timer){
+	uint8_t st_timer;
 	/*Включаемм транзисторы */
 		//4
 		GPIO_SetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
@@ -112,12 +125,17 @@ void ChannelBOnSS(void){
 		GPIO_SetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
 		//6
 		GPIO_SetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
+		st_timer = status_timer;
+		/// Условия включения таймера
+		if(st_timer) StartGTimer(GT_ON_SS_B);
+		if(!st_timer)ResetGTimer(GT_ON_SS_B);
+
 		flag_aktiv_channel = 2;
-		if (key == KEY_STAT_SW_RELAY) StartGTimer(GT_ON_SS_B); 								//Время работы транзистора
+
 }
 
-void ChannelBOnRelay(void){
-
+void ChannelBOnRelay(uint8_t status_timer){
+	uint8_t st_timer;
 	/*Включаем реле*/
 		//4
 		GPIO_ResetBits(RELAY_4_PORT_OFF, RELAY_4_PIN_OFF);
@@ -128,8 +146,10 @@ void ChannelBOnRelay(void){
 		//6
 		GPIO_ResetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
 		GPIO_SetBits(RELAY_6_PORT_ON, RELAY_6_PIN_ON);
+		st_timer = status_timer;
+		/// Условия включения таймера
+		if(st_timer) StartGTimer(GT_ON_RELAY_B);
 
-		if (key == KEY_STAT_SW_RELAY) StartGTimer(GT_ON_RELAY_B);
 
 		flag_aktiv_channel = 2;
 
@@ -137,6 +157,8 @@ void ChannelBOnRelay(void){
 
 //-------функция отключения канала А---------------------------------------------------------------------
 void ChannelAOffSS(void){
+
+
 	/*Отключаем транзисторы */
 			//1
 			GPIO_ResetBits(RELAY_1_PORT_IGBT, RELAY_1_PIN_IGBT);
@@ -144,16 +166,12 @@ void ChannelAOffSS(void){
 			GPIO_ResetBits(RELAY_2_PORT_IGBT, RELAY_2_PIN_IGBT);
 			//3
 			GPIO_ResetBits(RELAY_3_PORT_IGBT, RELAY_3_PIN_IGBT);
-			if (key == KEY_STAT_SW) StartGTimer(GTIMER19); 									//отсрочка времени включения
-			if (key == KEY_STAT_SW_RELAY){
-				StopGTimer(GT_ON_SS_A);
-				StartGTimer(GT_OFF_SS_A);
-			}
+
 
 }
 
-void ChannelAOffRelay(void){
-
+void ChannelAOffRelay(uint8_t status_timer){
+	uint8_t st_timer;
 		/*Отключаем 1  реле */
 		GPIO_ResetBits(RELAY_1_PORT_ON, RELAY_1_PIN_ON);
 		GPIO_SetBits(RELAY_1_PORT_OFF, RELAY_1_PIN_OFF);
@@ -163,11 +181,9 @@ void ChannelAOffRelay(void){
 		/*Отключаем 3  реле */
 		GPIO_ResetBits(RELAY_3_PORT_ON, RELAY_3_PIN_ON);
 		GPIO_SetBits(RELAY_3_PORT_OFF, RELAY_3_PIN_OFF);
-		/*тут даем команду на старт таймера отсрочки времени отключения реле 15 мс*/
-		StartGTimer(GTIMER2); //Задержка включения калала А
-
-		if (key == KEY_STAT_SW_RELAY) StartGTimer(GT_OFF_RELAY_A);
-
+		st_timer = status_timer;
+		/// Условия включения таймера
+		if(st_timer) StartGTimer(GT_OFF_RELAY_A);
 
 
 
@@ -175,6 +191,8 @@ void ChannelAOffRelay(void){
 
 //-------функция отключения канала B---------------------------------------------------------------------
 void ChannelBOffSS(void){
+
+
 	/*Отключаем транзисторы */
 		//4
 		GPIO_ResetBits(RELAY_4_PORT_IGBT, RELAY_4_PIN_IGBT);
@@ -182,16 +200,12 @@ void ChannelBOffSS(void){
 		GPIO_ResetBits(RELAY_5_PORT_IGBT, RELAY_5_PIN_IGBT);
 		//6
 		GPIO_ResetBits(RELAY_6_PORT_IGBT, RELAY_6_PIN_IGBT);
-		if (key == KEY_STAT_SW) StartGTimer(GTIMER20); 									//отсрочка времени включения
-		if (key == KEY_STAT_SW_RELAY){
-			StopGTimer(GT_ON_SS_B);
-			StartGTimer(GT_OFF_SS_B);
-		}
+
 }
 
 
-void ChannelBOffRelay(void){
-
+void ChannelBOffRelay(uint8_t status_timer){
+	uint8_t st_timer;
 	/*Отключаем 4  реле */
 	GPIO_ResetBits(RELAY_4_PORT_ON, RELAY_4_PIN_ON);
 	GPIO_SetBits(RELAY_4_PORT_OFF, RELAY_4_PIN_OFF);
@@ -201,10 +215,9 @@ void ChannelBOffRelay(void){
 	/*Отключаем 6  реле */
 	GPIO_ResetBits(RELAY_6_PORT_ON, RELAY_6_PIN_ON);
 	GPIO_SetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
-
-	/*тут даем команду на старт таймера отсрочки времени отключения реле 15 мс*/
-	StartGTimer(GTIMER1); //Задержка включения калала А
-	if (key == KEY_STAT_SW_RELAY) StartGTimer(GT_OFF_RELAY_B);
+	st_timer = status_timer;
+	/// Условия включения таймера
+	if(st_timer) StartGTimer(GT_OFF_RELAY_B);
 
 }
 
@@ -227,7 +240,7 @@ void PulsOffPolRelay(void){
 				}
 				break;
 			case ACTIV_CH_A:
-				if(GetGTimer(GT_ON_RELAY_A) >STAT_RELAY_DELAY){
+				if(GetGTimer(GT_ON_RELAY_A) >=STAT_RELAY_DELAY){
 					/*Отключаем ипмульс не реле канала А */
 					GPIO_ResetBits(RELAY_1_PORT_ON, RELAY_1_PIN_ON);
 					GPIO_ResetBits(RELAY_2_PORT_ON, RELAY_2_PIN_ON);
@@ -236,7 +249,15 @@ void PulsOffPolRelay(void){
 					StopGTimer(GT_ON_RELAY_A);
 				}
 
-				if(GetGTimer(GT_OFF_RELAY_B) >STAT_RELAY_DELAY){
+				if(GetGTimer(GT_OFF_RELAY_A) >=STAT_RELAY_DELAY){
+					/*Отключаем ипмульс не реле канале A */
+					GPIO_ResetBits(RELAY_1_PORT_OFF, RELAY_1_PIN_OFF);
+					GPIO_ResetBits(RELAY_2_PORT_OFF, RELAY_2_PIN_OFF);
+					GPIO_ResetBits(RELAY_3_PORT_OFF, RELAY_3_PIN_OFF);
+
+					StopGTimer(GT_OFF_RELAY_A);
+				}
+				if(GetGTimer(GT_OFF_RELAY_B) >=STAT_RELAY_DELAY){
 					/*Отключаем ипмульс не реле канале В */
 					GPIO_ResetBits(RELAY_4_PORT_OFF, RELAY_4_PIN_OFF);
 					GPIO_ResetBits(RELAY_5_PORT_OFF, RELAY_5_PIN_OFF);
@@ -245,9 +266,11 @@ void PulsOffPolRelay(void){
 					StopGTimer(GT_OFF_RELAY_B);
 				}
 
+
+
 				break;
 			case ACTIV_CH_B:
-				if(GetGTimer(GT_ON_RELAY_B) >STAT_RELAY_DELAY){
+				if(GetGTimer(GT_ON_RELAY_B) >=STAT_RELAY_DELAY){
 					/*Отключаем ипмульс не реле канала B */
 					GPIO_ResetBits(RELAY_4_PORT_ON, RELAY_4_PIN_ON);
 					GPIO_ResetBits(RELAY_5_PORT_ON, RELAY_5_PIN_ON);
@@ -255,8 +278,15 @@ void PulsOffPolRelay(void){
 
 					StopGTimer(GT_ON_RELAY_B);
 				}
+				if(GetGTimer(GT_OFF_RELAY_B) >=STAT_RELAY_DELAY){
+					/*Отключаем ипмульс не реле канале В */
+					GPIO_ResetBits(RELAY_4_PORT_OFF, RELAY_4_PIN_OFF);
+					GPIO_ResetBits(RELAY_5_PORT_OFF, RELAY_5_PIN_OFF);
+					GPIO_ResetBits(RELAY_6_PORT_OFF, RELAY_6_PIN_OFF);
 
-				if(GetGTimer(GT_OFF_RELAY_A) >STAT_RELAY_DELAY){
+					StopGTimer(GT_OFF_RELAY_B);
+				}
+				if(GetGTimer(GT_OFF_RELAY_A) >=STAT_RELAY_DELAY){
 					/*Отключаем ипмульс не реле канале A */
 					GPIO_ResetBits(RELAY_1_PORT_OFF, RELAY_1_PIN_OFF);
 					GPIO_ResetBits(RELAY_2_PORT_OFF, RELAY_2_PIN_OFF);
@@ -264,6 +294,8 @@ void PulsOffPolRelay(void){
 
 					StopGTimer(GT_OFF_RELAY_A);
 				}
+
+
 
 				break;
 			default:
@@ -279,13 +311,13 @@ void PulsOffStatSwitch(void){
 
 					break;
 				case ACTIV_CH_A:
-					if(GetGTimer(GT_ON_SS_A) >STAT_SW_DELAY){
+					if(GetGTimer(GT_ON_SS_A) >=STAT_SW_DELAY){
 						ChannelAOffSS();
 						StopGTimer(GT_ON_SS_A);
 					}
 					break;
 				case ACTIV_CH_B:
-					if(GetGTimer(GT_ON_SS_B) >STAT_SW_DELAY){
+					if(GetGTimer(GT_ON_SS_B) >=STAT_SW_DELAY){
 						ChannelBOffSS();
 						StopGTimer(GT_ON_SS_B);
 					}

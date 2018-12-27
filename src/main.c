@@ -109,7 +109,7 @@ float SIN_A_ref[] = {27, 53, 79, 104, 129, 153, 176, 198, 219, 238, 256,
 float shift10 = 34;
 float shift15 = 51;
 float shift20 = 68;
-float shift = 34;                   //дефолтные значения
+float shift = 51;                   //дефолтные значения
 
 
 short int flag_channel[CHANN_W] = {0};		//[0] - флаг состояния АА  0 - синусоида не в норме; 1 - синусоида в норме;
@@ -158,6 +158,8 @@ float gen_data[CHANN_W] = {0}; // переменная куда помещаются измеренные данные
 										// [5]-КАНАЛ В ФАЗА 3
 										// [6]-КАНАЛ С ФАЗА 1
 
+unsigned int key_delay = 60;		// задержка включения реле
+unsigned int ss_key_delay = 4;		// задержка включения транзистора
 
 //указатель кольцевого буфера
 int a11 = 0;
@@ -457,33 +459,70 @@ void PhaseRot(float *vol){
 	flag_phase_rot;
 }
 void MbRead(void){
+static unsigned int after_reg[4];
+static unsigned int befor_reg[4];
+static short int flag_stat_reg[4];
+
+	for (int i=0; i<4; i++){
+		befor_reg[i] = after_reg[i];
+		after_reg[i] = reg_data[40 + i];
+
+	}
+	for (int i=0; i<4; i++){
+		if (befor_reg[i] == after_reg[i]){
+			flag_stat_reg[i] = 1 ;
+		}
+		else{
+			flag_stat_reg[i] = 0 ;
+					}
+		}
 
 
-	switch(reg_data[40]){
-			case KEY_STAT_SW_RELAY:
-				key = KEY_STAT_SW_RELAY;
+
+
+	if(!flag_stat_reg[0]){
+		switch(reg_data[40]){
+				case KEY_STAT_SW_RELAY:
+					key = KEY_STAT_SW_RELAY;
+					break;
+				case KEY_STAT_SW:
+					key = KEY_STAT_SW;
+					break;
+				case KEY_RELAY:
+					key = KEY_RELAY;
+					break;
+				default:
+					break;
+			}
+	}
+	if(!flag_stat_reg[1]){
+		switch(reg_data[41]){
+			case 0:
+				shift = shift10;
 				break;
-			case KEY_STAT_SW:
-				key = KEY_STAT_SW;
+			case 1:
+				shift = shift15;
 				break;
-			case KEY_RELAY:
-				key = KEY_RELAY;
+			case 2:
+				shift = shift20;
 				break;
 			default:
 				break;
 		}
-	switch(reg_data[41]){
-		case 0:
-			shift = shift10;
-			break;
-		case 1:
-			shift = shift15;
-			break;
-		case 2:
-			shift = shift20;
-			break;
-		default:
-			break;
+	}
+	if(!flag_stat_reg[2]){
+		if((reg_data[42] >= 0) && (reg_data[42] <= 4000000)){
+
+				key_delay = (reg_data[42]*4)-1;
+
+		}
+	}
+	if(!flag_stat_reg[3]){
+		if((reg_data[43] > 0) && (reg_data[43] < 4000000)){
+
+			ss_key_delay = (reg_data[43]*4)-1;
+
+		}
 	}
 
 }
@@ -505,6 +544,8 @@ void MbWrite(void){
 	for (int i = 0; i<CHANN_W; i++){
 		reg_data[i+20] = rez_freg[i];
 		}
+	reg_data[30] = (key_delay/4)+1;
+	reg_data[31] = (ss_key_delay/4)+1;
 }
 
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
@@ -521,13 +562,13 @@ void SinCompar(float *vol, float shift){
 		switch(flag_mov_sin[i]){
 		case 0:
 			k[i] = count_nigativ_point[i];
-			if (((SIN_A_ref[k[i]]-shift) < vol[i]) && ((SIN_A_ref[k[i]]+shift) > vol[i])){
+			if (((SIN_A_ref[k[i]]-shift) < vol[i]) && (vol[i] < (SIN_A_ref[k[i]]+shift))){
 				flag_channel_posit[i] = 1;
 			}
 			else{
 				flag_channel_posit[i] = 0;
 			}
-			if ((((SIN_A_ref[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref[k[i]]*-1)+shift) > vol[i])){
+			if ((((SIN_A_ref[k[i]]*-1)-shift) < vol[i]) && (vol[i] < ((SIN_A_ref[k[i]]*-1)+shift))){
 				flag_channel_negat[i] = 1;
 			}
 			else{
@@ -548,14 +589,14 @@ void SinCompar(float *vol, float shift){
 			break;
 		case 1:
 			k[i] = count_posit_point[i];
-			if (((SIN_A_ref[k[i]]-shift) < vol[i]) && ((SIN_A_ref[k[i]]+shift) > vol[i])){
+			if (((SIN_A_ref[k[i]]-shift) < vol[i]) && (vol[i] < (SIN_A_ref[k[i]]+shift))){
 					flag_channel_posit[i] = 1;
 				}
 				else{
 					flag_channel_posit[i] = 0;
 				}
 
-				if ((((SIN_A_ref[k[i]]*-1)-shift) < vol[i]) && (((SIN_A_ref[k[i]]*-1)+shift) > vol[i])){
+				if ((((SIN_A_ref[k[i]]*-1)-shift) < vol[i]) && ((vol[i] < (SIN_A_ref[k[i]]*-1)+shift))){
 					flag_channel_negat[i] = 1;
 				}
 				else{
@@ -602,7 +643,7 @@ void Control(){
 	//SinChanAB();
 	SinCompar(&real_tmp_chan[0], shift);			//Сравнение синусоид
 	ChannelStatus();								//Опрос состояния каналов
-	FastSwitch(&real_tmp_chan[0]);
+	//FastSwitch(&real_tmp_chan[0]);
 	SwitchChannel();								//Управление переключениями каналов
 
 
@@ -630,15 +671,16 @@ int main(void){
 	InitKey();		//инициализация каналов переключения (отключение)
 
 	while(1){
-		//GPIO_SetBits(LED2_PORT, LED2);
+		GPIO_SetBits(LED2_PORT, LED2);
 		MbRead();
+
 		ButControl();
 		TrueRMS();
 		MbWrite();
 		do_modbus();
 		PulsOffPolRelay();
 		PulsOffStatSwitch();
-		//GPIO_ResetBits(LED2_PORT, LED2);
+		GPIO_ResetBits(LED2_PORT, LED2);
 
 	}
 }

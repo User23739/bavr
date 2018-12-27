@@ -66,14 +66,14 @@
 
 void RELAY_Init( void );
 void InitKey(void);
-void ChannelAOnSS(void);
-void ChannelAOnRelay(void);
-void ChannelBOnSS(void);
-void ChannelBOnRelay(void);
+void ChannelAOnSS(uint8_t status_timer);
+void ChannelAOnRelay(uint8_t status_timer);
+void ChannelBOnSS(uint8_t status_timer);
+void ChannelBOnRelay(uint8_t status_timer);
 void ChannelAOffSS(void);
-void ChannelAOffRelay(void);
+void ChannelAOffRelay(uint8_t status_timer);
 void ChannelBOffSS(void);
-void ChannelBOffRelay(void);
+void ChannelBOffRelay(uint8_t status_timer);
 void PulsOffPolRelay(void);
 void PulsOffStatSwitch(void);
 
