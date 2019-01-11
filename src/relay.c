@@ -68,7 +68,7 @@ void InitKey(void){
 	ChannelBOffSS();
 	ChannelBOffRelay(TIMER_ON);
 
-	//StartGTimer(GT_INIT_KEY);
+	StartGTimer(GT_INIT_KEY);
 
 
 

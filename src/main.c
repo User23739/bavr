@@ -139,7 +139,8 @@ short int flag_channel_negat[CHANN_W] = {0};		//[0] - флаг состояния АА  0 - син
 int  count_point[CHANN_W] = {0};						//счетчик отчетов
 
 
-//-------------------------
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////ТЕСТОВЫЕ ФУНКЦИИ////////////////////////////////////////////////////////////////////////////////////////
 /*тестовый буфер флагов */
 
 // буфер кольцево для хранения данных измерения
@@ -204,6 +205,72 @@ void TransData(void){
 		real_tmp_chan[i] = gen_data[i];
 	}
 }
+//////////////////////////////////////////////////////////////////
+// Блок описания констант первого входя
+#define MAX_BLOK 4
+#define TRUE 1
+#define FALSE 0
+#define BLOK_1 0
+#define BLOK_2 1
+#define BLOK_3 2
+#define BLOK_4 3
+
+
+// Локальные переменные
+uint8_t first_entry[MAX_BLOK];				//текущее состояние
+//static char prev_main_state;		//предыдущее состояние
+//static char main_state_return;		//состояние, в которое нужно вернуться после какого-либо события
+//static char entry;					//флаг первого вхождения в состояние
+
+
+
+///////////////////////////////////////////////////////////////////////
+unsigned int test_key_delay = 4000;		// задержка включения транзистора
+
+
+void TestKeySwitch(){
+
+
+	if(!first_entry[BLOK_1]){
+		StartGTimer(GT_ON_TEST_KEY);
+		ChannelAOnSS(TIMER_ON);
+		//ChannelAOffRelay(TIMER_ON);
+		ChannelAOnRelay(TIMER_ON);
+		ChannelBOnSS(TIMER_ON);
+		ChannelBOnRelay(TIMER_ON);
+		first_entry[BLOK_1] = TRUE;
+
+    }
+
+    if(GetGTimer(GT_ON_TEST_KEY) >test_key_delay){
+    	StopGTimer(GT_ON_TEST_KEY);
+    	ChannelAOffSS();
+    	//ChannelAOnRelay(TIMER_ON);
+		ChannelAOffRelay(TIMER_ON);
+		ChannelBOffSS();
+		ChannelBOffRelay(TIMER_ON);
+		//first_entry[BLOK_1] = FALSE;
+		StartGTimer(GT_OFF_TEST_KEY);
+
+
+    }
+    if(GetGTimer(GT_OFF_TEST_KEY) >test_key_delay){
+        	StopGTimer(GT_OFF_TEST_KEY);
+        	ChannelAOnSS(TIMER_ON);
+        	//ChannelAOffRelay(TIMER_ON);
+        	ChannelAOnRelay(TIMER_ON);
+    		//first_entry[BLOK_1] = FALSE;
+        	ChannelBOnSS(TIMER_ON);
+        	ChannelBOnRelay(TIMER_ON);
+    		StartGTimer(GT_ON_TEST_KEY);
+
+
+        }
+
+
+}
+
+////////////////////////////////////////ТЕСТОВЫЕ ФУНКЦИИ///////////////////////////////////////////////////////////////////////////////
 
 void TIM4_IRQHandler(void){
 
@@ -245,44 +312,44 @@ void ZeroDetect(float *vol){
 			if ((after[i] > 0) && (before[i] > 0)){
 				flag_zero_freq[i] = 1;
 				flag_mov_sin[i] = 1;
-				if(i == CHANN){
+				/*if(i == CHANN){
 					send_buffer_flag(777);
 					//tmp_rez = before[i] - after[i];
 					//send_buffer_flag(tmp_rez);
 				}
 				//count_posit_point[i]++;
-				//count_nigativ_point[i] = 0;
+				//count_nigativ_point[i] = 0;*/
 			}
 			else if ((after[i] < 0) && (before[i] > 0)){
 				flag_mov_sin[i] = 0;
-				if(i == CHANN){
+				/*if(i == CHANN){
 					send_buffer_flag(6999);
 					//tmp_rez = before[i] - after[i];
 					//send_buffer_flag(tmp_rez);
 				}
 				//count_nigativ_point[i]++;
-				//count_posit_point[i] = 0;
+				//count_posit_point[i] = 0;*/
 			}
 			else if ((after[i] < 0) && (before[i] < 0)){
 				flag_zero_freq[i] = 0;
 				flag_mov_sin[i] = 0;
-				if(i == CHANN){
+				/*if(i == CHANN){
 					send_buffer_flag(999);
 					//tmp_rez = after[i] - before[i];
 					//send_buffer_flag(tmp_rez);
 				}
 				//count_nigativ_point[i]++;
-				//count_posit_point[i] = 0;
+				//count_posit_point[i] = 0;*/
 			}
 			else if ((after[i] > 0) && (before[i] < 0)){
 				flag_mov_sin[i]= 1;
-				if(i == CHANN){
+				/*if(i == CHANN){
 					send_buffer_flag(6777);
 					//tmp_rez = after[i] - before[i];
 					//send_buffer_flag(tmp_rez);
 				}
 				//count_posit_point[i]++;
-				//count_nigativ_point[i] = 0;
+				//count_nigativ_point[i] = 0;*/
 			}
 /*тест для определения
 			if(i == CHANN){
@@ -456,14 +523,14 @@ void PhaseRot(float *vol){
 
 
 
-	flag_phase_rot;
+	//flag_phase_rot;
 }
 void MbRead(void){
-static unsigned int after_reg[4];
-static unsigned int befor_reg[4];
-static short int flag_stat_reg[4];
+static unsigned int after_reg[5];
+static unsigned int befor_reg[5];
+static short int flag_stat_reg[5];
 
-	for (int i=0; i<4; i++){
+	for (int i=0; i<5; i++){
 		befor_reg[i] = after_reg[i];
 		after_reg[i] = reg_data[40 + i];
 
@@ -524,6 +591,13 @@ static short int flag_stat_reg[4];
 
 		}
 	}
+	if(!flag_stat_reg[4]){
+			if((reg_data[44] > 0) && (reg_data[44] < 4000000)){
+
+				test_key_delay = (reg_data[44]*4)-1;
+
+			}
+		}
 
 }
 
@@ -546,6 +620,7 @@ void MbWrite(void){
 		}
 	reg_data[30] = (key_delay/4)+1;
 	reg_data[31] = (ss_key_delay/4)+1;
+	reg_data[32] = (test_key_delay/4)+1;
 }
 
 //---------- функция сравнения синуса канала A-----------------------------------------------------------
@@ -576,15 +651,15 @@ void SinCompar(float *vol, float shift){
 			}
 				if (((flag_channel_posit[i]) || (flag_channel_negat[i])) && (!zero_noise[i])){
 					flag_channel[i] = 1;
-					if(i == CHANN){
+					/*if(i == CHANN){
 						send_buffer_flag(1);
-					}
+					}*/
 				}
 				else{
 					flag_channel[i] = 0;
-					if(i == CHANN){
+					/*if(i == CHANN){
 						send_buffer_flag(2);
-					}
+					}*/
 				}
 			break;
 		case 1:
@@ -607,15 +682,15 @@ void SinCompar(float *vol, float shift){
 
 					if (((flag_channel_posit[i]) || (flag_channel_negat[i])) && (!zero_noise[i])){
 						flag_channel[i] = 1;
-						if(i == CHANN){
+						/*if(i == CHANN){
 							send_buffer_flag(111);
-						}
+						}*/
 					}
 					else{
 						flag_channel[i] = 0;
-						if(i == CHANN){
+						/*if(i == CHANN){
 							send_buffer_flag(222);
-						}
+						}*/
 					}
 			break;
 		default:
@@ -645,6 +720,7 @@ void Control(){
 	ChannelStatus();								//Опрос состояния каналов
 	//FastSwitch(&real_tmp_chan[0]);
 	SwitchChannel();								//Управление переключениями каналов
+	//TestKeySwitch();								//Тестовая функция для проверки ключа
 
 
 

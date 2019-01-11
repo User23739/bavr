@@ -81,6 +81,7 @@ void MbWrite(void);
 void SinChanAB();
 void Noise(float *vol);
 void FastSwitch(float *vol);
+void TestKeySwitch();
 
 
 

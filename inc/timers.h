@@ -8,7 +8,7 @@
 #ifndef TIMERS_H_
 #define TIMERS_H_
 
-#define MAX_GTIMERS 27  // макс число таймеров
+#define MAX_GTIMERS 29  // макс число таймеров
 
 #define GT_KEY_CH_A 0		//таймер отсрочки включения реле канала А
 #define GT_KEY_CH_B 1		//таймер отсрочки включения реле канала В
@@ -37,6 +37,8 @@
 #define GT_OFF_RELAY_B 24
 #define GT_OFF_SS_A 25
 #define GT_OFF_SS_B 26
+#define GT_ON_TEST_KEY 27
+#define GT_OFF_TEST_KEY 28
 
 //Функции работы с глобальными таймерами
 
